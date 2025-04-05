@@ -84,8 +84,8 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
           position={[10, 10, 10]}
           intensity={0.9}
           castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
+          shadow-mapSize-width={4096}
+          shadow-mapSize-height={4096}
         />
         <StoreFloor />
         <ShelfList />
