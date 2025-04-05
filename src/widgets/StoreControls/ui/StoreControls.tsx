@@ -72,7 +72,6 @@ export function StoreControls() {
     if (preset) {
       setStoreSize(preset.storeSize);
       setShelves(preset.shelves);
-      // Update local state to match the preset
       setWidth(preset.storeSize.width.toString());
       setLength(preset.storeSize.length.toString());
       setHeight(preset.storeSize.height.toString());

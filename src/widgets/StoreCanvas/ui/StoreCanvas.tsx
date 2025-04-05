@@ -17,7 +17,7 @@ interface StoreCanvasProps {
 export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
   const [canvasSize, setCanvasSize] = useState({
     width: "100%",
-    height: "100%",
+    height: "850px",
   });
   const { selectShelf } = useShelvesActions();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,15 +31,15 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth;
         if (showAnalytics) {
-          const newWidth = containerWidth * 0.6;
+          const newWidth = containerWidth * 0.9;
           setCanvasSize({
             width: `${newWidth}px`,
-            height: "100%",
+            height: `850px`,
           });
         } else {
           setCanvasSize({
             width: "1300px",
-            height: "800px",
+            height: "850px",
           });
         }
       }
