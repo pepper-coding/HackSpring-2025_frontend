@@ -33,8 +33,8 @@ export function StoreControls() {
   const [length, setLength] = useState(storeSize.length.toString());
   const [height, setHeight] = useState(storeSize.height.toString());
 
-  const [shelfType, setShelfType] = useState<ShelfType>("general");
-  const [shelfSize, setShelfSize] = useState<ShelfSize>("medium");
+  const [shelfType, setShelfType] = useState<ShelfType>("vegetables")
+  const [shelfSize, setShelfSize] = useState<ShelfSize>("medium")
 
   const handleUpdateStoreSize = () => {
     setStoreSize({
@@ -183,7 +183,7 @@ export function StoreControls() {
                   <SelectItem value="bakery">Bakery</SelectItem>
                   <SelectItem value="produce">Produce</SelectItem>
                   <SelectItem value="meat">Meat</SelectItem>
-                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="vegetables">Vegetables</SelectItem>
                 </SelectContent>
               </Select>
             </div>

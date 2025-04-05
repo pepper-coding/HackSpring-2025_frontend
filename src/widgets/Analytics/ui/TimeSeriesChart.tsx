@@ -40,16 +40,16 @@ const shelfColors: Record<string, string> = {
   bakery: "#dcedc1",
   produce: "#ffd3b6",
   meat: "#ffaaa5",
-  general: "#b8b8ff",
-};
+  vegetables: "#b8b8ff",
+}
 
 export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
   const chartData = {
     labels: data.labels,
     datasets: data.datasets.map((dataset) => {
-      const shelf = shelves.find((s) => s.id === dataset.shelfId);
-      const shelfType = shelf?.type || "general";
-      const color = shelfColors[shelfType] || "#b8b8ff";
+      const shelf = shelves.find((s) => s.id === dataset.shelfId)
+      const shelfType = shelf?.type || "vegetables"
+      const color = shelfColors[shelfType] || "#b8b8ff"
 
       return {
         label: shelf ? `${shelf.type} (${shelf.size})` : "Unknown",
