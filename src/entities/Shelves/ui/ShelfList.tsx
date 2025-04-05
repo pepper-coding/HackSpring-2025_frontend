@@ -6,6 +6,7 @@ import { useAppSelector } from "@/shared/hooks/useAppSelector";
 import { ShelfModel } from "@/entities/Shelves";
 import * as THREE from "three";
 import { useShelvesActions } from "@/entities/Shelves";
+import { SQUARE_SIZE } from "../model/constants/shelf";
 
 const shelfSizes = {
   small: { width: 1, height: 1.5, depth: 0.6 },
@@ -92,9 +93,9 @@ export function ShelfList() {
       updateShelfPosition({
         id: draggingId,
         position: {
-          x: group.position.x,
+          x: Math.round(group.position.x / SQUARE_SIZE) * SQUARE_SIZE,
           y: group.position.y,
-          z: group.position.z,
+          z: Math.round(group.position.z / SQUARE_SIZE) * SQUARE_SIZE,
         },
       });
     }

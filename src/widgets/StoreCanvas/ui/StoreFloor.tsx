@@ -1,10 +1,10 @@
 "use client";
 
+import { SQUARE_SIZE } from "@/entities/Shelves";
 import { useAppSelector } from "@/shared/hooks/useAppSelector";
-import { group } from "console";
 import { useMemo } from "react";
 
-const size = 1;
+const size = SQUARE_SIZE;
 
 export function StoreFloor() {
   const { width, length } = useAppSelector((state) => state.store);
@@ -12,7 +12,10 @@ export function StoreFloor() {
     const squares = [];
     for (let i = 0; i < width; i++) {
       for (let j = 0; j < length; j++) {
-        squares.push([size * i - width / 2, size * j - length / 2]);
+        squares.push([
+          size * i - (width * size) / 2,
+          size * j - (length * size) / 2,
+        ]);
       }
     }
     return squares;
@@ -22,12 +25,33 @@ export function StoreFloor() {
     <group>
       {squares.map((square) => (
         <mesh
+          key={square.join("-")}
           position={[square[0], 0, square[1]]}
           rotation={[-Math.PI / 2, 0, 0]}
         >
           <planeGeometry args={[size, size]} />
           <meshStandardMaterial
-            color={(square[0] + square[1]) % 2 === 0 ? "#f0f0f0" : "#000"}
+            color={
+              (square[0] / size + square[1] / size) % 2 === 0
+                ? "#f0f0f0"
+                : "#000"
+            }
+          />
+        </mesh>
+      ))}
+      {squares.map((square) => (
+        <mesh
+          key={square.join("-uju")}
+          position={[square[0], 0, square[1]]}
+          rotation={[Math.PI / 2, 0, 0]}
+        >
+          <planeGeometry args={[size, size]} />
+          <meshStandardMaterial
+            color={
+              (square[0] / size + square[1] / size) % 2 === 0
+                ? "#f0f0f0"
+                : "#000"
+            }
           />
         </mesh>
       ))}

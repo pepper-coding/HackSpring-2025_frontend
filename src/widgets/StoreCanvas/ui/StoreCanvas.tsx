@@ -20,7 +20,6 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
     height: "100%",
   });
   const { selectShelf } = useShelvesActions();
-  const storeSize = useAppSelector((state) => state.store);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedShelfId = useAppSelector(
@@ -70,8 +69,10 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
       }}
     >
       <Canvas
+        linear
+        flat
         shadows
-        dpr={[0.5, 0.8]}
+        dpr={[0.5, 1]}
         camera={{ position: [10, 10, 10], fov: 50 }}
         style={{
           width: canvasSize.width,

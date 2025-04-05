@@ -21,3 +21,5 @@ export const productColorPalettes: Record<string, string[]> = {
   meat: ["#ffebee", "#ffcdd2", "#ef9a9a", "#e57373", "#ef5350"],
   general: ["#f3e5f5", "#e1bee7", "#ce93d8", "#ba68c8", "#ab47bc"],
 };
+
+export const SQUARE_SIZE = 0.5;

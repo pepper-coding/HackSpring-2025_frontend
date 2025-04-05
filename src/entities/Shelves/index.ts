@@ -1,3 +1,4 @@
+export { SQUARE_SIZE } from "./model/constants/shelf";
 export { shelvesReducer, useShelvesActions } from "./model/shelvesSlice";
 export { Shelf as ShelfModel } from "./ui/ShelfModel";
 export type { Shelf, ShelfSize, ShelfType } from "./model/shelvesSlice";

@@ -84,6 +84,32 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
       recordInteraction(id);
     };
 
+    if (type === "wall") {
+      return (
+        <group
+          ref={ref}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+            handleInteraction();
+          }}
+        >
+          <Box
+            args={[2, 3, 0.25]}
+            castShadow
+            receiveShadow
+            position={[0, 0.5, 0]}
+          >
+            <meshStandardMaterial
+              color={"#333"}
+              opacity={isSelected ? 0.8 : 1}
+              transparent={isSelected}
+            />
+          </Box>
+        </group>
+      );
+    }
+
     return (
       <group
         ref={ref}

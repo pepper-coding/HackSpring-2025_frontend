@@ -8,7 +8,8 @@ export type ShelfType =
   | "produce"
   | "meat"
   | "vegetables"
-  | "general";
+  | "general"
+  | "wall";
 export type ShelfSize = "small" | "medium" | "large";
 
 export interface Shelf {

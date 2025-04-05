@@ -184,6 +184,7 @@ export function StoreControls() {
                   <SelectItem value="produce">Produce</SelectItem>
                   <SelectItem value="meat">Meat</SelectItem>
                   <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="wall">Wall</SelectItem>
                 </SelectContent>
               </Select>
             </div>
