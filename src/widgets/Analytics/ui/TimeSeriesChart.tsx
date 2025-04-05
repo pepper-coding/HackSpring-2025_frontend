@@ -12,6 +12,7 @@ import {
   Legend,
 } from "chart.js";
 import type { Shelf } from "@/entities/Shelves";
+import { useMemo } from "react";
 
 ChartJS.register(
   CategoryScale,
@@ -34,31 +35,54 @@ interface TimeSeriesChartProps {
   shelves: Shelf[];
 }
 
-// Color mappings for different shelf types
-const shelfColors: Record<string, string> = {
-  dairy: "#a8e6cf",
-  bakery: "#dcedc1",
-  produce: "#ffd3b6",
-  meat: "#ffaaa5",
-  general: "#b8b8ff",
+// Colors for different shelf types
+const shelfTypeColors: Record<string, string> = {
+  dairy: "#4299e1", // blue
+  bakery: "#38b2ac", // teal  
+  produce: "#ed8936", // orange
+  meat: "#f56565", // red
+  general: "#9f7aea", // purple
 };
 
+// Fallback color
+const defaultColor = "#48bb78"; // green
+
 export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
+  // Group data by shelf type
+  const groupedByType = useMemo(() => {
+    // Create a map to store aggregated data by shelf type
+    const typeMap: Record<string, number[]> = {};
+    
+    // Initialize all types with zero arrays
+    const uniqueTypes = Array.from(new Set(shelves.map(shelf => shelf.type || "unknown")));
+    uniqueTypes.forEach(type => {
+      typeMap[type] = Array(data.labels.length).fill(0);
+    });
+    
+    // Aggregate data by shelf type
+    data.datasets.forEach(dataset => {
+      const shelf = shelves.find(s => s.id === dataset.shelfId);
+      const type = shelf?.type || "unknown";
+      
+      dataset.data.forEach((value, index) => {
+        typeMap[type][index] = (typeMap[type][index] || 0) + value;
+      });
+    });
+    
+    // Convert to Chart.js dataset format
+    return Object.entries(typeMap).map(([type, values]) => ({
+      label: type,
+      data: values,
+      borderColor: shelfTypeColors[type] || defaultColor,
+      backgroundColor: `${shelfTypeColors[type] || defaultColor}40`,
+      tension: 0.3,
+      borderWidth: 2,
+    }));
+  }, [data, shelves]);
+
   const chartData = {
     labels: data.labels,
-    datasets: data.datasets.map((dataset) => {
-      const shelf = shelves.find((s) => s.id === dataset.shelfId);
-      const shelfType = shelf?.type || "general";
-      const color = shelfColors[shelfType] || "#b8b8ff";
-
-      return {
-        label: shelf ? `${shelf.type} (${shelf.size})` : "Unknown",
-        data: dataset.data,
-        borderColor: color,
-        backgroundColor: `${color}80`, // Add transparency
-        tension: 0.3,
-      };
-    }),
+    datasets: groupedByType,
   };
 
   const options = {
@@ -67,16 +91,48 @@ export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
     plugins: {
       legend: {
         position: "top" as const,
+        labels: {
+          usePointStyle: true,
+          boxWidth: 10,
+          font: {
+            weight: 'bold' as const,
+            size: 12,
+          },
+        },
       },
       title: {
         display: true,
-        text: "Interactions by Hour",
+        text: "Hourly Interactions by Shelf Type",
+        font: {
+          size: 16,
+        }
       },
+      tooltip: {
+        callbacks: {
+          title: (tooltipItems: any[]) => {
+            return `Hour: ${tooltipItems[0].label}`;
+          },
+          label: (context: any) => {
+            return `${context.dataset.label}: ${context.raw} interactions`;
+          }
+        }
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Number of Interactions'
+        },
+        stacked: false,
       },
+      x: {
+        title: {
+          display: true,
+          text: 'Hour of Day'
+        }
+      }
     },
   };
 

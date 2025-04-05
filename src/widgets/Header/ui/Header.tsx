@@ -1,7 +1,17 @@
 "use client";
 import { Button } from "@/shared/components/ui/button";
 import { useAppSelector } from "@/shared/hooks/useAppSelector";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
+import { useRouter } from "next/navigation";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogClose
+} from "@/shared/components/ui/dialog";
+import { DetailedAnalytics } from "@/widgets/DetailedAnalytics";
+import { StoreProvider } from "@/app/providers/store";
 
 export interface HeaderProps {
   setShowAnalytics: (showAnalytics: boolean) => void;
@@ -14,6 +24,7 @@ export const Header: FC<HeaderProps> = ({
 }) => {
   const storeSize = useAppSelector((state) => state.store);
   const shelves = useAppSelector((state) => state.shelves.items);
+  const [showDetailedAnalytics, setShowDetailedAnalytics] = useState(false);
 
   const handleSavePreset = () => {
     const presetData = {
@@ -33,24 +44,44 @@ export const Header: FC<HeaderProps> = ({
   };
 
   return (
-    <div className="flex-none bg-background p-4 border-b">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">3D Store Planner</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={handleSavePreset}
-            className="px-4 py-2 bg-green-600 text-white rounded-md"
-          >
-            Сохранить пресет
-          </button>
-          <button
-            onClick={() => setShowAnalytics(!showAnalytics)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
-          >
-            {showAnalytics ? "Hide Analytics" : "Show Analytics"}
-          </button>
+    <>
+      <div className="flex-none bg-background p-4 border-b">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">3D Store Planner</h1>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSavePreset}
+              className="px-4 py-2 bg-green-600 text-white rounded-md"
+            >
+              Save Preset
+            </button>
+            <button
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+            >
+              {showAnalytics ? "Hide Mini Analytics" : "Show Mini Analytics"}
+            </button>
+            <Button
+              onClick={() => setShowDetailedAnalytics(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Detailed Analytics
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+      
+      <Dialog open={showDetailedAnalytics} onOpenChange={setShowDetailedAnalytics}>
+        <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Detailed Analytics</DialogTitle>
+            <DialogClose />
+          </DialogHeader>
+          <StoreProvider>
+            <DetailedAnalytics />
+          </StoreProvider>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
