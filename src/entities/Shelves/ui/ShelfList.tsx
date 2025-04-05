@@ -158,7 +158,6 @@ export function ShelfList() {
               isSelected={shelf.id === selectedShelfId}
               onClick={() => !draggingId && selectShelf(shelf.id)}
             />
-
             {
               <mesh
                 position={[size.width / 2 + 0.2, size.height / 2 + 0.1, 0]}

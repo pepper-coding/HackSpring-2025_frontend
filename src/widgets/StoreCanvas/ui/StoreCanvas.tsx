@@ -62,6 +62,7 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
 
   return (
     <div
+      ref={containerRef}
       className="relative transition-all duration-300 ease-in-out"
       style={{
         width: "100%",
@@ -92,10 +93,6 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
         <CustomerList />
         <Orbit selectedShelfId={selectedShelfId} />
         <Stats />
-        <gridHelper
-          args={[storeSize.width, storeSize.width / 2]}
-          position={[0, 0.01, 0]}
-        />
         <axesHelper args={[5]} />
       </Canvas>
     </div>
