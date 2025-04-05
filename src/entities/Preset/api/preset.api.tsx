@@ -1,10 +1,8 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Preset } from "../model/types/Preset";
 import { CreatePresetDto } from "./dto/createPreset";
+import { storeApi } from "@/shared/api/storeApi";
 
-const presetApi = createApi({
-  reducerPath: "presetApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
+const presetApi = storeApi.injectEndpoints({
   endpoints: (builder) => ({
     getPresets: builder.query<Preset[], void>({
       query: () => "/presets",

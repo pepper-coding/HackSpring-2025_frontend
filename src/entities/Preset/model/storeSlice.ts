@@ -5,12 +5,18 @@ interface StoreState {
   width: number;
   length: number;
   height: number;
+  id: string;
+  name: string;
+  customerNumber: number;
 }
 
 const initialState: StoreState = {
   width: 20,
   length: 30,
   height: 4,
+  id: "",
+  name: "",
+  customerNumber: 0,
 };
 
 export const storeSlice = buildSlice({
@@ -24,6 +30,22 @@ export const storeSlice = buildSlice({
       state.width = action.payload.width;
       state.length = action.payload.length;
       state.height = action.payload.height;
+    },
+
+    updatePreset: (
+      state,
+      action: PayloadAction<
+        Partial<{
+          width: number;
+          height: number;
+          length: number;
+          name: string;
+          id: string;
+          customerNumber: number;
+        }>
+      >
+    ) => {
+      return { ...state, ...action.payload };
     },
   },
 });

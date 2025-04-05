@@ -16,7 +16,8 @@ export interface Shelf {
   id: string;
   type: ShelfType;
   size: ShelfSize;
-  position: { x: number; y: number; z: number };
+  x: number;
+  y: number;
   rotation: number;
   interactions: number;
 }
@@ -48,7 +49,8 @@ export const shelvesSlice = buildSlice({
         id: uuidv4(),
         type,
         size,
-        position,
+        x: position.x,
+        y: position.y,
         rotation: 0,
         interactions: 0,
       };
@@ -64,7 +66,8 @@ export const shelvesSlice = buildSlice({
       const { id, position } = action.payload;
       const shelf = state.items.find((s) => s.id === id);
       if (shelf) {
-        shelf.position = position;
+        shelf.x = position.x;
+        shelf.y = position.y;
       }
     },
     updateShelfRotation: (

@@ -141,7 +141,7 @@ export function ShelfList() {
         return (
           <group
             key={shelf.id}
-            position={[shelf.position.x, baseY, shelf.position.z]}
+            position={[shelf.x, baseY, shelf.y]}
             rotation={[0, shelf.rotation, 0]}
             onPointerDown={(e) => handlePointerDown(e, shelf.id)}
             onPointerOver={(e) => handlePointerOver(e, shelf.id)}

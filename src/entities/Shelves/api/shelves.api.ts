@@ -1,8 +1,7 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { storeApi } from "@/shared/api/storeApi";
+import { Shelf, ShelfSize, ShelfType } from "../model/shelvesSlice";
 
-const shelfApi = createApi({
-  reducerPath: "shelfApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
+const shelfApi = storeApi.injectEndpoints({
   endpoints: (builder) => ({
     getShelves: builder.query({
       query: () => "/shelves",
@@ -10,14 +9,36 @@ const shelfApi = createApi({
     getShelfById: builder.query({
       query: (id) => `/shelves/${id}`,
     }),
-    createShelf: builder.mutation({
+    createShelf: builder.mutation<
+      Shelf,
+      {
+        name: string;
+        type: ShelfType;
+        size: ShelfSize;
+        x: number;
+        y: number;
+        presetId: string;
+      }
+    >({
       query: (newShelf) => ({
         url: "/shelves",
         method: "POST",
         body: newShelf,
       }),
     }),
-    updateShelf: builder.mutation({
+    updateShelf: builder.mutation<
+      Shelf,
+      {
+        id: string;
+      } & Partial<{
+        name: string;
+        type: ShelfType;
+        size: ShelfSize;
+        x: number;
+        y: number;
+        presetId: string;
+      }>
+    >({
       query: ({ id, ...updatedShelf }) => ({
         url: `/shelves/${id}`,
         method: "PUT",
