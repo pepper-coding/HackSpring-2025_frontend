@@ -22,7 +22,10 @@ export default function Home() {
               <StoreControls />
             </div>
 
-            <StoreCanvas showAnalytics={showAnalytics} />
+            <div className="flex-1 w-full h-full">
+              <StoreCanvas showAnalytics={showAnalytics} />
+            </div>
+
             {showAnalytics && (
               <div className="w-96 flex-none bg-muted p-4 overflow-y-auto">
                 <AnalyticsPanel />
