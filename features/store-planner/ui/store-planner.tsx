@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stats } from "@react-three/drei";
+import { Stats } from "@react-three/drei";
 import { StoreControls } from "./store-controls";
 import { StoreFloor } from "./store-floor";
 import { ShelfList } from "./shelf-list";
@@ -10,6 +10,8 @@ import { CustomerList } from "./customer-list";
 import { AnalyticsPanel } from "@/features/analytics/ui/analytics-panel";
 import { useAppSelector } from "@/shared/hooks/use-app-selector";
 import { useShelvesActions } from "@/entities/shelves";
+import { Arrow } from "./arrow";
+import { Orbit } from "./orbit";
 
 export function StorePlanner() {
   const [showAnalytics, setShowAnalytics] = useState(false);
@@ -20,7 +22,6 @@ export function StorePlanner() {
   const { selectShelf } = useShelvesActions();
   const storeSize = useAppSelector((state) => state.store);
   const shelves = useAppSelector((state) => state.shelves.items);
-  const controlsRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedShelfId = useAppSelector(
@@ -107,16 +108,17 @@ export function StorePlanner() {
         <div
           className="relative transition-all duration-300 ease-in-out"
           style={{
-            width: canvasSize.width,
-            height: canvasSize.height,
+            width: "100%",
+            height: "100%",
           }}
         >
           <Canvas
             shadows
+            dpr={[0.5, 0.8]}
             camera={{ position: [10, 10, 10], fov: 50 }}
             style={{
-              width: "100%",
-              height: "100%",
+              width: canvasSize.width,
+              height: canvasSize.height,
             }}
             onClick={handleBackgroundClick}
           >
@@ -132,12 +134,7 @@ export function StorePlanner() {
             <StoreFloor />
             <ShelfList />
             <CustomerList />
-            <OrbitControls
-              ref={controlsRef}
-              enableRotate={!selectedShelfId}
-              enablePan={!selectedShelfId}
-              enableZoom={!selectedShelfId}
-            />
+            <Orbit selectedShelfId={selectedShelfId} />
             <Stats />
             <gridHelper
               args={[storeSize.width, storeSize.width / 2]}
