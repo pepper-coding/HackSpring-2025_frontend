@@ -1,66 +1,69 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Stats } from "@react-three/drei"
-import { StoreControls } from "./store-controls"
-import { StoreFloor } from "./store-floor"
-import { ShelfList } from "./shelf-list"
-import { CustomerList } from "./customer-list"
-import { AnalyticsPanel } from "@/features/analytics/ui/analytics-panel"
-import { useAppSelector } from "@/shared/hooks/use-app-selector"
-import { useAppDispatch } from "@/shared/hooks/use-app-dispatch"
-import { selectShelf } from "@/entities/shelves/model/shelves-slice"
+import { useState, useRef, useEffect } from "react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, Stats } from "@react-three/drei";
+import { StoreControls } from "./store-controls";
+import { StoreFloor } from "./store-floor";
+import { ShelfList } from "./shelf-list";
+import { CustomerList } from "./customer-list";
+import { AnalyticsPanel } from "@/features/analytics/ui/analytics-panel";
+import { useAppSelector } from "@/shared/hooks/use-app-selector";
+import { useShelvesActions } from "@/entities/shelves";
 
 export function StorePlanner() {
-  const [showAnalytics, setShowAnalytics] = useState(false)
-  const [dragging, setDragging] = useState(false)
-  const [canvasSize, setCanvasSize] = useState({ width: "100%", height: "100%" })
-  const storeSize = useAppSelector((state) => state.store)
-  const shelves = useAppSelector((state) => state.shelves.items)
-  const controlsRef = useRef<any>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({
+    width: "100%",
+    height: "100%",
+  });
+  const { selectShelf } = useShelvesActions();
+  const storeSize = useAppSelector((state) => state.store);
+  const shelves = useAppSelector((state) => state.shelves.items);
+  const controlsRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedShelfId = useAppSelector((state) => state.shelves.selectedShelfId)
-  const dispatch = useAppDispatch()
+  const selectedShelfId = useAppSelector(
+    (state) => state.shelves.selectedShelfId
+  );
 
   useEffect(() => {
     const updateCanvasSize = () => {
       if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth
+        const containerWidth = containerRef.current.offsetWidth;
         if (showAnalytics) {
-          const newWidth = containerWidth * 0.6
+          const newWidth = containerWidth * 0.6;
           setCanvasSize({
             width: `${newWidth}px`,
             height: "100%",
-          })
+          });
         } else {
           setCanvasSize({
             width: "1300px",
             height: "800px",
-          })
+          });
         }
       }
-    }
+    };
 
-    updateCanvasSize()
-    window.addEventListener("resize", updateCanvasSize)
+    updateCanvasSize();
+    window.addEventListener("resize", updateCanvasSize);
 
     return () => {
-      window.removeEventListener("resize", updateCanvasSize)
-    }
-  }, [showAnalytics])
+      window.removeEventListener("resize", updateCanvasSize);
+    };
+  }, [showAnalytics]);
 
   const handleBackgroundClick = () => {
     if (selectedShelfId) {
-      dispatch(selectShelf(null))
+      selectShelf(null);
     }
-  }
+  };
 
   const handleSavePreset = () => {
     const presetData = {
       storeSize,
-      shelves: shelves.map(shelf => ({
+      shelves: shelves.map((shelf) => ({
         id: shelf.id,
         type: shelf.type,
         position: shelf.position,
@@ -68,11 +71,11 @@ export function StorePlanner() {
         size: shelf.size,
         interactions: shelf.interactions,
       })),
-      createdAt: new Date().toISOString()
-    }
-    
-    console.log("Preset data:", presetData)
-  }
+      createdAt: new Date().toISOString(),
+    };
+
+    console.log("Preset data:", presetData);
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -112,7 +115,6 @@ export function StorePlanner() {
             shadows
             camera={{ position: [10, 10, 10], fov: 50 }}
             style={{
-              cursor: dragging ? "grabbing" : "grab",
               width: "100%",
               height: "100%",
             }}
@@ -128,29 +130,19 @@ export function StorePlanner() {
               shadow-mapSize-height={2048}
             />
             <StoreFloor />
-            <ShelfList
-              onDragStart={() => {
-                setDragging(true)
-                if (controlsRef.current) {
-                  controlsRef.current.enabled = false
-                }
-              }}
-              onDragEnd={() => {
-                setDragging(false)
-                if (controlsRef.current) {
-                  controlsRef.current.enabled = true
-                }
-              }}
-            />
+            <ShelfList />
             <CustomerList />
             <OrbitControls
               ref={controlsRef}
-              enableRotate={!dragging && !selectedShelfId}
-              enablePan={!dragging && !selectedShelfId}
-              enableZoom={!dragging && !selectedShelfId}
+              enableRotate={!selectedShelfId}
+              enablePan={!selectedShelfId}
+              enableZoom={!selectedShelfId}
             />
             <Stats />
-            <gridHelper args={[storeSize.width, storeSize.width / 2]} position={[0, 0.01, 0]} />
+            <gridHelper
+              args={[storeSize.width, storeSize.width / 2]}
+              position={[0, 0.01, 0]}
+            />
             <axesHelper args={[5]} />
           </Canvas>
         </div>
@@ -162,5 +154,5 @@ export function StorePlanner() {
         )}
       </div>
     </div>
-  )
+  );
 }

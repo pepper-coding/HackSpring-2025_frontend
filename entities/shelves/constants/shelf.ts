@@ -1,11 +1,10 @@
-import type { ShelfSize } from "@/entities/shelves/model/shelves-slice"
-
+import type { ShelfSize } from "@/entities/shelves/model/shelves-slice";
 
 export const shelfSizes: Record<ShelfSize, [number, number, number]> = {
   small: [1, 1.5, 0.6],
   medium: [1.5, 1.5, 0.6],
   large: [2.5, 1.5, 0.6],
-}
+};
 
 export const shelfColors: Record<string, string> = {
   dairy: "#a8e6cf",
@@ -13,7 +12,7 @@ export const shelfColors: Record<string, string> = {
   produce: "#ffd3b6",
   meat: "#ffaaa5",
   general: "#b8b8ff",
-}
+};
 
 export const productColorPalettes: Record<string, string[]> = {
   dairy: ["#e3f2fd", "#bbdefb", "#90caf9", "#64b5f6", "#42a5f5"],
@@ -21,4 +20,4 @@ export const productColorPalettes: Record<string, string[]> = {
   produce: ["#e8f5e9", "#c8e6c9", "#a5d6a7", "#81c784", "#66bb6a"],
   meat: ["#ffebee", "#ffcdd2", "#ef9a9a", "#e57373", "#ef5350"],
   general: ["#f3e5f5", "#e1bee7", "#ce93d8", "#ba68c8", "#ab47bc"],
-}
+};

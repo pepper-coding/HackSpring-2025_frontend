@@ -1,81 +1,82 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useAppSelector } from "@/shared/hooks/use-app-selector"
-import { useAppDispatch } from "@/shared/hooks/use-app-dispatch"
-import { setStoreSize } from "@/entities/store/model/store-slice"
-import { addShelf, type ShelfSize, type ShelfType, clearShelves, setShelves } from "@/entities/shelves/model/shelves-slice"
-import { addCustomer } from "@/entities/customers/model/customers-slice"
-import { storePresets } from "./store-presets"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react";
+import { useAppSelector } from "@/shared/hooks/use-app-selector";
+import { storePresets } from "./store-presets";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ShelfSize, ShelfType, useShelvesActions } from "@/entities/shelves";
+import { useCustomersActions } from "@/entities/customers";
+import { useStoreActions } from "@/entities/store";
 
 export function StoreControls() {
-  const dispatch = useAppDispatch()
-  const storeSize = useAppSelector((state) => state.store)
+  const storeSize = useAppSelector((state) => state.store);
+  const { addShelf, clearShelves, setShelves } = useShelvesActions();
+  const { addCustomer } = useCustomersActions();
+  const { setStoreSize } = useStoreActions();
 
-  const [width, setWidth] = useState(storeSize.width.toString())
-  const [length, setLength] = useState(storeSize.length.toString())
-  const [height, setHeight] = useState(storeSize.height.toString())
+  const [width, setWidth] = useState(storeSize.width.toString());
+  const [length, setLength] = useState(storeSize.length.toString());
+  const [height, setHeight] = useState(storeSize.height.toString());
 
-  const [shelfType, setShelfType] = useState<ShelfType>("general")
-  const [shelfSize, setShelfSize] = useState<ShelfSize>("medium")
+  const [shelfType, setShelfType] = useState<ShelfType>("general");
+  const [shelfSize, setShelfSize] = useState<ShelfSize>("medium");
 
   const handleUpdateStoreSize = () => {
-    dispatch(
-      setStoreSize({
-        width: Number(width),
-        length: Number(length),
-        height: Number(height),
-      }),
-    )
-  }
+    setStoreSize({
+      width: Number(width),
+      length: Number(length),
+      height: Number(height),
+    });
+  };
 
   const handleAddShelf = () => {
-    const x = (Math.random() - 0.5) * (Number(width) - 2)
-    const z = (Math.random() - 0.5) * (Number(length) - 2)
+    const x = (Math.random() - 0.5) * (Number(width) - 2);
+    const z = (Math.random() - 0.5) * (Number(length) - 2);
 
-    dispatch(
-      addShelf({
-        type: shelfType,
-        size: shelfSize,
-        position: { x, y: 0, z },
-      }),
-    )
-  }
+    addShelf({
+      type: shelfType,
+      size: shelfSize,
+      position: { x, y: 0, z },
+    });
+  };
 
   const handleAddCustomer = () => {
-    const angle = Math.random() * Math.PI * 2
-    const x = Math.cos(angle) * (Number(width) / 2 - 1)
-    const z = Math.sin(angle) * (Number(length) / 2 - 1)
+    const angle = Math.random() * Math.PI * 2;
+    const x = Math.cos(angle) * (Number(width) / 2 - 1);
+    const z = Math.sin(angle) * (Number(length) / 2 - 1);
 
-    dispatch(
-      addCustomer({
-        position: { x, y: 0, z },
-      }),
-    )
-  }
+    addCustomer({
+      position: { x, y: 0, z },
+    });
+  };
 
   const handlePresetChange = (presetKey: string) => {
-    if (presetKey === "") return
-    
-    const preset = storePresets[presetKey]
+    if (presetKey === "") return;
+
+    const preset = storePresets[presetKey];
     if (preset) {
-      dispatch(setStoreSize(preset.storeSize))
-      dispatch(setShelves(preset.shelves))
+      setStoreSize(preset.storeSize);
+      setShelves(preset.shelves);
       // Update local state to match the preset
-      setWidth(preset.storeSize.width.toString())
-      setLength(preset.storeSize.length.toString())
-      setHeight(preset.storeSize.height.toString())
+      setWidth(preset.storeSize.width.toString());
+      setLength(preset.storeSize.length.toString());
+      setHeight(preset.storeSize.height.toString());
     }
-  }
+  };
 
   const handleClearAll = () => {
-    dispatch(clearShelves())
-  }
+    clearShelves();
+  };
 
   return (
     <div className="space-y-6">
@@ -85,19 +86,23 @@ export function StoreControls() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-          <Select onValueChange={handlePresetChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a preset layout" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(storePresets).map(([key, preset]) => (
-                <SelectItem key={key} value={key}>
-                  {preset.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-            <Button variant="destructive" onClick={handleClearAll} className="w-full">
+            <Select onValueChange={handlePresetChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a preset layout" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(storePresets).map(([key, preset]) => (
+                  <SelectItem key={key} value={key}>
+                    {preset.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="destructive"
+              onClick={handleClearAll}
+              className="w-full"
+            >
               Clear All Shelves
             </Button>
           </div>
@@ -161,7 +166,10 @@ export function StoreControls() {
           <div className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="shelfType">Shelf Type</Label>
-              <Select value={shelfType} onValueChange={(value) => setShelfType(value as ShelfType)}>
+              <Select
+                value={shelfType}
+                onValueChange={(value) => setShelfType(value as ShelfType)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -177,7 +185,10 @@ export function StoreControls() {
 
             <div className="grid gap-2">
               <Label htmlFor="shelfSize">Shelf Size</Label>
-              <Select value={shelfSize} onValueChange={(value) => setShelfSize(value as ShelfSize)}>
+              <Select
+                value={shelfSize}
+                onValueChange={(value) => setShelfSize(value as ShelfSize)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select size" />
                 </SelectTrigger>
@@ -207,5 +218,5 @@ export function StoreControls() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

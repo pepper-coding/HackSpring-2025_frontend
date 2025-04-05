@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Line } from "react-chartjs-2"
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,21 +10,28 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js"
-import type { Shelf } from "@/entities/shelves/model/shelves-slice"
+} from "chart.js";
+import type { Shelf } from "@/entities/shelves";
 
-// Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface TimeSeriesChartProps {
   data: {
-    labels: string[]
+    labels: string[];
     datasets: {
-      shelfId: string
-      data: number[]
-    }[]
-  }
-  shelves: Shelf[]
+      shelfId: string;
+      data: number[];
+    }[];
+  };
+  shelves: Shelf[];
 }
 
 // Color mappings for different shelf types
@@ -34,15 +41,15 @@ const shelfColors: Record<string, string> = {
   produce: "#ffd3b6",
   meat: "#ffaaa5",
   general: "#b8b8ff",
-}
+};
 
 export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
   const chartData = {
     labels: data.labels,
     datasets: data.datasets.map((dataset) => {
-      const shelf = shelves.find((s) => s.id === dataset.shelfId)
-      const shelfType = shelf?.type || "general"
-      const color = shelfColors[shelfType] || "#b8b8ff"
+      const shelf = shelves.find((s) => s.id === dataset.shelfId);
+      const shelfType = shelf?.type || "general";
+      const color = shelfColors[shelfType] || "#b8b8ff";
 
       return {
         label: shelf ? `${shelf.type} (${shelf.size})` : "Unknown",
@@ -50,9 +57,9 @@ export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
         borderColor: color,
         backgroundColor: `${color}80`, // Add transparency
         tension: 0.3,
-      }
+      };
     }),
-  }
+  };
 
   const options = {
     responsive: true,
@@ -71,7 +78,7 @@ export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
         beginAtZero: true,
       },
     },
-  }
+  };
 
   return (
     <div className="h-80">
@@ -83,6 +90,5 @@ export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
-

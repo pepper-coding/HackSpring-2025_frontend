@@ -1,10 +1,10 @@
-import { configureStore } from "@reduxjs/toolkit"
-import { setupListeners } from "@reduxjs/toolkit/query"
-import { storeApi } from "@/shared/api/store-api"
-import storeReducer from "@/entities/store/model/store-slice"
-import shelvesReducer from "@/entities/shelves/model/shelves-slice"
-import customersReducer from "@/entities/customers/model/customers-slice"
-import analyticsReducer from "@/entities/analytics/model/analytics-slice"
+import { configureStore } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query";
+import { storeApi } from "@/shared/api/store-api";
+import { storeReducer } from "@/entities/store";
+import { shelvesReducer } from "@/entities/shelves";
+import { customersReducer } from "@/entities/customers";
+import { analyticsReducer } from "@/entities/analytics";
 
 export const store = configureStore({
   reducer: {
@@ -14,11 +14,11 @@ export const store = configureStore({
     analytics: analyticsReducer,
     [storeApi.reducerPath]: storeApi.reducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(storeApi.middleware),
-})
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(storeApi.middleware),
+});
 
-setupListeners(store.dispatch)
+setupListeners(store.dispatch);
 
-export type RootState = ReturnType<typeof store.getState>
-export type AppDispatch = typeof store.dispatch
-
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
