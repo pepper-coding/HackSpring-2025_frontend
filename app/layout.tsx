@@ -1,6 +1,6 @@
 import type React from "react";
 import { ThemeProvider } from "@/shared/components/theme-provider";
-import { StoreProvider } from "@/notapp/providers/store";
+import { StoreProvider } from "@/app/providers/store";
 import type { Metadata } from "next";
 import "./globals.css";
 
