@@ -34,7 +34,7 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(({ shelf, isSelected, o
     for (let i = 0; i < shelfPositions.length; i++) {
       const shelfY = -height / 2 + height * shelfPositions[i]
       const productType = shelfProductTypes[i]
-      const colorPalette = productColorPalettes[productType] || productColorPalettes.general
+      const colorPalette = productColorPalettes[productType] || productColorPalettes.vegetables
 
       const productCount = Math.max(3, Math.floor(width / 0.4))
 

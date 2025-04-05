@@ -28,7 +28,7 @@ export function ShelfInteractionsChart({ data }: ShelfInteractionsChartProps) {
           "#dcedc1", // bakery
           "#ffd3b6", // produce
           "#ffaaa5", // meat
-          "#b8b8ff", // general
+          "#b8b8ff", // vegetables
         ],
         borderColor: ["#88d6bf", "#ccdd91", "#efc396", "#ef9a95", "#a8a8ef"],
         borderWidth: 1,
