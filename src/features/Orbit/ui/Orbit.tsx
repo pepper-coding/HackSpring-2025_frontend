@@ -3,7 +3,6 @@ import { useFrame } from "@react-three/fiber";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { Arrow } from "./Arrow";
-import { useAppSelector } from "@/shared/hooks/useAppSelector";
 
 interface OrbitProps {
   selectedShelfId: string | null;
@@ -14,19 +13,7 @@ export const Orbit: React.FC<OrbitProps> = ({ selectedShelfId }) => {
   const [, forceUpdate] = useState<number>(0);
   const orbitRef = useRef(null);
 
-  const { height, width } = useAppSelector((state) => state.store);
-
   const tempVector = useMemo(() => new THREE.Vector3(0, 0, 0), []);
-
-  const storeBounds = useMemo(
-    () => ({
-      minX: -width / 2,
-      maxX: width / 2,
-      minZ: -height / 2,
-      maxZ: height / 2,
-    }),
-    [width, height]
-  );
 
   const keysPressed = useRef<Record<string, boolean>>({});
 

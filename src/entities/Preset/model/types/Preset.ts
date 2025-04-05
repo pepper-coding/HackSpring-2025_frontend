@@ -5,6 +5,7 @@ export interface Preset {
   name: string;
   width: number;
   height: number;
+  length: number;
   customerNumber: number;
 
   shelves: Shelf[];

@@ -53,10 +53,12 @@ export const customersSlice = buildSlice({
     ) => {
       const { id, targetShelfId, targetPosition } = action.payload;
       const customer = state.items.find((c) => c.id === id);
-    
+
       const shelvesExist = state.items.some((item) => item.targetShelfId);
-      const cashierExist = state.items.some((item) => item.targetShelfId === "cashier");
-    
+      const cashierExist = state.items.some(
+        (item) => item.targetShelfId === "cashier"
+      );
+
       if (customer) {
         if (shelvesExist || cashierExist) {
           customer.targetShelfId = targetShelfId;

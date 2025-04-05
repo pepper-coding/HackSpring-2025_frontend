@@ -58,8 +58,8 @@ export const PresetSelect: FC<PresetSelectProps> = ({}) => {
     const preset = presets?.find((preset) => preset.id === presetId);
     if (preset) {
       updatePreset({
-        height: 0,
-        length: preset.height,
+        height: preset.height,
+        length: preset.length,
         width: preset.width,
         name: preset.name,
         id: preset.id,
@@ -80,6 +80,7 @@ export const PresetSelect: FC<PresetSelectProps> = ({}) => {
     const { data } = await createPreset({
       width: 10,
       height: 10,
+      length: 4,
       customerNumber: 0,
       name: newPresetName,
     });
@@ -88,8 +89,8 @@ export const PresetSelect: FC<PresetSelectProps> = ({}) => {
       setIsModalOpen(false);
       setNewPresetName("");
       updatePreset({
-        height: 0,
-        length: data.height,
+        height: data.height,
+        length: data.length,
         width: data.width,
         id: data.id,
         name: data.name,

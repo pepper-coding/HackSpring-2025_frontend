@@ -37,6 +37,7 @@ export const DimensionsForm: FC<DimensionsFormProps> = ({}) => {
     await patchPreset({
       width: newWidth ? Number(newWidth) : undefined,
       height: newHeight ? Number(newHeight) : undefined,
+      length: newLength ? Number(newLength) : undefined,
       name: newName ? newName : undefined,
       id,
     });
