@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import React, { useState } from "react";
 import { Vector3 } from "three";
 import { Arrow } from "./arrow";
+import { useAppSelector } from "@/shared/hooks/use-app-selector";
 
 export const Orbit = ({
   selectedShelfId,
@@ -10,6 +11,7 @@ export const Orbit = ({
   selectedShelfId: string | null;
 }) => {
   const [viewTarget, setViewTarget] = useState<Vector3>(new Vector3(0, 0, 0));
+  const { height, width } = useAppSelector((state) => state.store);
 
   useFrame((_, delta) => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -41,6 +43,18 @@ export const Orbit = ({
             1
           );
           break;
+      }
+
+      if (newViewTarget.x > width / 2) {
+        newViewTarget.x = width / 2;
+      } else if (newViewTarget.x < -width / 2) {
+        newViewTarget.x = -width / 2;
+      }
+
+      if (newViewTarget.y > height / 2) {
+        newViewTarget.y = height / 2;
+      } else if (newViewTarget.y < -height / 2) {
+        newViewTarget.y = -height / 2;
       }
 
       setViewTarget(newViewTarget);
