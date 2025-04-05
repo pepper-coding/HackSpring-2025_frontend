@@ -3,11 +3,15 @@
 import { SQUARE_SIZE } from "@/entities/Shelves";
 import { useAppSelector } from "@/shared/hooks/useAppSelector";
 import { useMemo } from "react";
+import { useLoader } from "@react-three/fiber";
+import { TextureLoader } from "three";
 
 const size = SQUARE_SIZE;
 
 export function StoreFloor() {
   const { width, length } = useAppSelector((state) => state.store);
+  const parquetTexture = useLoader(TextureLoader, '/textures/parquet.jpg');
+
   const squares = useMemo(() => {
     const squares = [];
     for (let i = 0; i < width; i++) {
@@ -28,15 +32,10 @@ export function StoreFloor() {
           key={square.join("-")}
           position={[square[0], 0, square[1]]}
           rotation={[-Math.PI / 2, 0, 0]}
+          receiveShadow
         >
           <planeGeometry args={[size, size]} />
-          <meshStandardMaterial
-            color={
-              (square[0] / size + square[1] / size) % 2 === 0
-                ? "#e7e0d8"
-                : "#e6dfca "
-            }
-          />
+          <meshStandardMaterial map={parquetTexture} />
         </mesh>
       ))}
     </group>

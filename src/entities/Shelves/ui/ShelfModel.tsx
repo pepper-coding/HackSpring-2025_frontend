@@ -209,6 +209,7 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
           color="black"
           anchorX="center"
           anchorY="middle"
+          rotation={[0, Math.PI, 0]}
         >
           {type.charAt(0).toUpperCase() + type.slice(1)}
         </Text>
