@@ -69,8 +69,6 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
       }}
     >
       <Canvas
-        linear
-        flat
         shadows
         dpr={[0.5, 1]}
         camera={{ position: [10, 10, 10], fov: 50 }}
@@ -81,10 +79,10 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
         onClick={handleBackgroundClick}
       >
         <color attach="background" args={["#fffbf1"]} />
-        <ambientLight intensity={1.2} />
+        <ambientLight intensity={0.5} />
         <directionalLight
           position={[10, 10, 10]}
-          intensity={1}
+          intensity={0.9}
           castShadow
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}

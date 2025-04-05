@@ -28,6 +28,7 @@ export function StoreFloor() {
           key={square.join("-")}
           position={[square[0], 0, square[1]]}
           rotation={[-Math.PI / 2, 0, 0]}
+          receiveShadow
         >
           <planeGeometry args={[size, size]} />
           <meshStandardMaterial
