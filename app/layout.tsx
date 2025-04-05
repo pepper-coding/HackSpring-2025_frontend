@@ -1,8 +1,8 @@
 import type React from "react";
-import { ThemeProvider } from "@/components/theme-provider";
-import { StoreProvider } from "@/app/store-provider";
-import "./globals.css";
+import { ThemeProvider } from "@/shared/components/theme-provider";
+import { StoreProvider } from "@/app/providers/store";
 import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "3D Store Planner",
@@ -24,5 +24,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-import "./globals.css";
