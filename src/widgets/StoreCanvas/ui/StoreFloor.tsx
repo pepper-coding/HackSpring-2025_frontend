@@ -33,24 +33,8 @@ export function StoreFloor() {
           <meshStandardMaterial
             color={
               (square[0] / size + square[1] / size) % 2 === 0
-                ? "#f0f0f0"
-                : "#000"
-            }
-          />
-        </mesh>
-      ))}
-      {squares.map((square) => (
-        <mesh
-          key={square.join("-uju")}
-          position={[square[0], 0, square[1]]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <planeGeometry args={[size, size]} />
-          <meshStandardMaterial
-            color={
-              (square[0] / size + square[1] / size) % 2 === 0
-                ? "#f0f0f0"
-                : "#000"
+                ? "#e7e0d8"
+                : "#e6dfca "
             }
           />
         </mesh>

@@ -80,8 +80,8 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
         }}
         onClick={handleBackgroundClick}
       >
-        <color attach="background" args={["#f0f0f0"]} />
-        <ambientLight intensity={0.5} />
+        <color attach="background" args={["#fffbf1"]} />
+        <ambientLight intensity={1.2} />
         <directionalLight
           position={[10, 10, 10]}
           intensity={1}
