@@ -7,6 +7,7 @@ import { ShelfModel } from "@/entities/Shelves";
 import * as THREE from "three";
 import { useShelvesActions } from "@/entities/Shelves";
 import { SQUARE_SIZE } from "../model/constants/shelf";
+import { Text } from "@react-three/drei";
 
 const shelfSizes = {
   small: { width: 1, height: 1.5, depth: 0.6 },
@@ -160,14 +161,18 @@ export function ShelfList() {
               onClick={() => !draggingId && selectShelf(shelf.id)}
             />
             {
-              <mesh
-                position={[size.width / 2 + 0.2, size.height / 2 + 0.1, 0]}
+              <Text
+                position={[size.width / 2 + 0.1, size.height / 2 + 0.1, 0]}
+                fontSize={0.2}
+                color="orange"
+                anchorX="center"
+                anchorY="middle"
                 userData={{ isRotateButton: true }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <boxGeometry args={[0.2, 0.2, 0.2]} />
-                <meshStandardMaterial color="yellow" />
-              </mesh>
+                🔄
+              </Text>
+
             }
           </group>
         );
