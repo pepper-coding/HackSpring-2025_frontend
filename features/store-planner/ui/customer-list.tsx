@@ -8,11 +8,17 @@ import { Customer } from "@/entities/customers/ui/customer"
 import { incrementInteraction } from "@/entities/shelves/model/shelves-slice"
 import { recordInteraction } from "@/entities/analytics/model/analytics-slice"
 import * as THREE from "three"
+import { useRef, useEffect } from "react"
 
 export function CustomerList() {
   const customers = useAppSelector((state) => state.customers.items)
   const shelves = useAppSelector((state) => state.shelves.items)
   const dispatch = useAppDispatch()
+  const lineRefs = useRef({})
+
+  useEffect(() => {
+    lineRefs.current = {}
+  }, [])
 
   useFrame(() => {
     customers.forEach((customer) => {
@@ -31,11 +37,8 @@ export function CustomerList() {
 
         if (targetShelf) {
           const targetPosition = new THREE.Vector3(targetShelf.position.x, 0, targetShelf.position.z)
-
           const customerPosition = new THREE.Vector3(customer.position.x, 0, customer.position.z)
-
           const direction = new THREE.Vector3().subVectors(targetPosition, customerPosition).normalize()
-
           const distance = customerPosition.distanceTo(targetPosition)
 
           if (distance < 0.5) {
@@ -75,6 +78,15 @@ export function CustomerList() {
               }),
             )
           }
+
+          if (lineRefs.current[customer.id]) {
+            const line = lineRefs.current[customer.id]
+            line.geometry.setFromPoints([
+              new THREE.Vector3(customer.position.x, 0.1, customer.position.z),
+              targetPosition.clone().setY(0.1)
+            ])
+            line.geometry.attributes.position.needsUpdate = true
+          }
         }
       }
       if (Math.abs(customer.position.x) > 20 || Math.abs(customer.position.z) > 20) {
@@ -86,9 +98,22 @@ export function CustomerList() {
   return (
     <>
       {customers.map((customer) => (
-        <Customer key={customer.id} customer={customer} />
+        <group key={customer.id}>
+          <Customer customer={customer} />
+          {customer.targetShelfId && (
+            <line ref={el => lineRefs.current[customer.id] = el}>
+              <bufferGeometry attach="geometry" />
+              <lineBasicMaterial 
+                attach="material" 
+                color="white" 
+                linewidth={1} 
+                transparent 
+                opacity={0.5} 
+              />
+            </line>
+          )}
+        </group>
       ))}
     </>
   )
 }
-

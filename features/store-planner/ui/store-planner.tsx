@@ -84,7 +84,7 @@ export function StorePlanner() {
               onClick={handleSavePreset}
               className="px-4 py-2 bg-green-600 text-white rounded-md"
             >
-              Сохранить пресет
+              Save preset
             </button>
             <button
               onClick={() => setShowAnalytics(!showAnalytics)}
