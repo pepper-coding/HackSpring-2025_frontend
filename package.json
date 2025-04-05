@@ -72,12 +72,14 @@
     "three": "latest",
     "uuid": "latest",
     "vaul": "^0.9.6",
+    "xlsx": "^0.18.5",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/xlsx": "^0.0.36",
     "postcss": "^8.5.3",
     "tailwindcss": "3",
     "typescript": "^5"

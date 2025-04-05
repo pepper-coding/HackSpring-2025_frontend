@@ -1,0 +1,1 @@
+export { DetailedAnalytics } from "./ui/DetailedAnalytics"; 
