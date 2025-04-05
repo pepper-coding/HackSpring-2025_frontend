@@ -1,5 +1,3 @@
-"use client";
-
 import { useFrame } from "@react-three/fiber";
 import { useAppSelector } from "@/shared/hooks/useAppSelector";
 import { Customer } from "@/entities/Customers/ui/Customer";
@@ -7,6 +5,7 @@ import * as THREE from "three";
 import { useCustomersActions } from "@/entities/Customers/model/slice/customersSlice";
 import { useAnalyticsActions } from "@/entities/Analytics/model/analyticsSlice";
 import { useShelvesActions } from "@/entities/Shelves/model/shelvesSlice";
+import { useEffect, useRef } from "react";
 
 export function CustomerList() {
   const customers = useAppSelector((state) => state.customers.items);
@@ -15,6 +14,12 @@ export function CustomerList() {
     useCustomersActions();
   const { recordInteraction } = useAnalyticsActions();
   const { incrementInteraction } = useShelvesActions();
+
+  const lineRefs = useRef<Record<string, THREE.Line | undefined>>({});
+
+useEffect(() => {
+  lineRefs.current = {};
+}, []);
 
   useFrame(() => {
     customers.forEach((customer) => {
@@ -79,7 +84,14 @@ export function CustomerList() {
               y: 0,
               z: customer.position.z + direction.z * customer.speed,
             };
-
+            if (lineRefs.current[customer.id]) {
+              const line = lineRefs.current[customer.id];
+              line.geometry.setFromPoints([
+                new THREE.Vector3(customer.position.x, 0.1, customer.position.z),
+                targetPosition.clone().setY(0.1),
+              ]);
+              line.geometry.attributes.position.needsUpdate = true;
+            }
             updateCustomerPosition({
               id: customer.id,
               position: newPosition,
@@ -99,7 +111,21 @@ export function CustomerList() {
   return (
     <>
       {customers.map((customer) => (
-        <Customer key={customer.id} customer={customer} />
+        <group key={customer.id}>
+          <Customer customer={customer} />
+          {customer.targetShelfId && (
+            <line ref={(el) => (lineRefs.current[customer.id] = el)}>
+              <bufferGeometry attach="geometry" />
+              <lineBasicMaterial 
+                attach="material" 
+                color="white" 
+                linewidth={1} 
+                transparent 
+                opacity={0.5} 
+              />
+            </line>
+          )}
+        </group>
       ))}
     </>
   );

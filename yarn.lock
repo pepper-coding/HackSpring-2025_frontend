@@ -2396,7 +2396,7 @@
     utility-types "^3.11.0"
     zustand "^5.0.1"
 
-"@react-three/fiber@latest":
+"@react-three/fiber@^9.1.1":
   version "9.1.1"
   resolved "https://registry.yarnpkg.com/@react-three/fiber/-/fiber-9.1.1.tgz#55adc22bb996babcb56e9eefc6b06beb874bcf78"
   integrity sha512-S0De6e7xnlZd2QmnBm2rZVXxlknynCSAoCW1M8fF2yH93Q/cra3xwH8rAq4CMqNARsotbZSU/eNPGY/rdQaAhA==
