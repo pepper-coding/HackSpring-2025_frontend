@@ -1,23 +1,42 @@
-"use client"
-import { Bar } from "react-chartjs-2"
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js"
+"use client";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { useMemo } from "react";
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface ShelfInteractionsChartProps {
   data: {
-    id: string
-    label: string
-    value: number
-  }[]
+    id: string;
+    label: string;
+    value: number;
+  }[];
 }
 
 export function ShelfInteractionsChart({ data }: ShelfInteractionsChartProps) {
   // Sort data by value in descending order
-  const sortedData = [...data].sort((a, b) => b.value - a.value)
+  const sortedData = useMemo(
+    () => data.sort((a, b) => b.value - a.value),
+    [data]
+  );
 
-  const chartData = {
+  const chartData = useMemo(() => ({
     labels: sortedData.map((item) => item.label),
     datasets: [
       {
@@ -34,7 +53,7 @@ export function ShelfInteractionsChart({ data }: ShelfInteractionsChartProps) {
         borderWidth: 1,
       },
     ],
-  }
+  }), [sortedData]);
 
   const options = {
     responsive: true,
@@ -48,7 +67,7 @@ export function ShelfInteractionsChart({ data }: ShelfInteractionsChartProps) {
         text: "Shelf Interactions",
       },
     },
-  }
+  };
 
   return (
     <div className="h-80">
@@ -60,6 +79,5 @@ export function ShelfInteractionsChart({ data }: ShelfInteractionsChartProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
-
