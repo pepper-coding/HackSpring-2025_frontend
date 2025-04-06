@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { useCustomersActions } from "@/entities/Customers/model/slice/customersSlice";
 import { useAnalyticsActions } from "@/entities/Analytics/model/analyticsSlice";
 import { useShelvesActions } from "@/entities/Shelves/model/shelvesSlice";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function CustomerList() {
   const customers = useAppSelector((state) => state.customers.items);
@@ -16,6 +16,8 @@ export function CustomerList() {
   const { incrementInteraction } = useShelvesActions();
 
   const lineRefs = useRef<Record<string, THREE.Line | undefined>>({});
+
+  const [movingCustomers, setMovingCustomers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     lineRefs.current = {};
@@ -84,6 +86,7 @@ export function CustomerList() {
               y: 0,
               z: customer.position.z + direction.z * customer.speed,
             };
+
             if (lineRefs.current[customer.id]) {
               const line = lineRefs.current[customer.id];
               line?.geometry.setFromPoints([
@@ -96,18 +99,24 @@ export function CustomerList() {
               ]);
               line!.geometry.attributes.position.needsUpdate = true;
             }
+
             updateCustomerPosition({
               id: customer.id,
               position: newPosition,
             });
+
+            setMovingCustomers((prev) => new Set(prev).add(customer.id));
           }
         }
       }
-      if (
-        Math.abs(customer.position.x) > 20 ||
-        Math.abs(customer.position.z) > 20
-      ) {
+
+      if (Math.abs(customer.position.x) > 20 || Math.abs(customer.position.z) > 20) {
         removeCustomer(customer.id);
+        setMovingCustomers((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(customer.id);
+          return newSet;
+        });
       }
     });
   });
@@ -117,8 +126,7 @@ export function CustomerList() {
       {customers.map((customer) => (
         <group key={customer.id}>
           <Customer customer={customer} />
-          {customer.targetShelfId && (
-            // @ts-ignore
+          {customer.targetShelfId && movingCustomers.has(customer.id) && (
             <line ref={(el) => (lineRefs.current[customer.id] = el)}>
               <bufferGeometry attach="geometry" />
               <lineBasicMaterial
