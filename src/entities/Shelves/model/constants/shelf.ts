@@ -12,6 +12,7 @@ export const shelfColors: Record<string, string> = {
   produce: "#ffd3b6",
   meat: "#ffaaa5",
   general: "#b8b8ff",
+  cashier: "#ff6b6b",
 };
 
 export const productColorPalettes: Record<string, string[]> = {

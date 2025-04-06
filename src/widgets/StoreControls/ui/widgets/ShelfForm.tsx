@@ -100,6 +100,25 @@ export const ShelfForm = () => {
               </SelectContent>
             </Select>
           </div>
+          <Button 
+            className="w-full"
+            onClick={() => {
+              addShelf({
+                type: "cashier",
+                size: "medium",
+                position: { x: 0, y: 0, z: 0 }
+              });
+            }}
+            style={{
+              backgroundColor: "#6bb8ff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Set up a cash reg
+          </Button>
 
           <Button onClick={handleAddShelf} className="w-full">
             {isLoading ? <Loader /> : "Add Shelf"}

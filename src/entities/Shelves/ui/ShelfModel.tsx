@@ -83,7 +83,75 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
       incrementInteraction(id);
       recordInteraction(id);
     };
-
+    if (type === "cashier") {
+      return (
+        <group
+          ref={ref}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+            handleInteraction();
+          }}
+        >
+          <Box
+            args={[1.5, 0.05, 1]}
+            position={[0, -0.1, 0.1]}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial
+              color={color}
+              opacity={isSelected ? 0.8 : 1}
+              transparent={isSelected}
+            />
+          </Box>
+          <Box
+            args={[0.1, -0.62, 1]}
+            position={[-0.7, -0.43, 0.1]}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial color={color} />
+          </Box>
+          <Box
+            args={[0.1, -0.62, 1]}
+            position={[0.7, -0.43, 0.1]}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial color={color} />
+          </Box>
+          <Box
+            args={[0.5, 0.8, 0.1]}
+            position={[0, 0.5, 0.51]}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial color="#b7d2f1" />
+          </Box>
+          <Text
+            position={[0, 1.2, 0.5]}
+            fontSize={0.2}
+            color="black"
+            anchorX="center"
+            anchorY="middle"
+            rotation={[0, Math.PI, 0]}
+          >
+            CashRegister
+          </Text>
+          {isSelected && (
+            <Box args={[1.6, 1.1, 1.1]}>
+              <meshStandardMaterial
+                color="#ffff00"
+                wireframe
+                opacity={0.5}
+                transparent
+              />
+            </Box>
+          )}
+        </group>
+      );
+    }
     if (type === "wall") {
       return (
         <group
