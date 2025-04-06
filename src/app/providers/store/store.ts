@@ -6,7 +6,7 @@ import { shelvesReducer } from "@/entities/Shelves";
 import { customersReducer } from "@/entities/Customers";
 import { analyticsReducer } from "@/entities/Analytics";
 import { timerReducer } from "@/features/VirtualTimer";
-import { simulationReducer } from "@/features/Simulation";
+import { simulationApi, simulationReducer } from "@/features/Simulation";
 
 export const store = configureStore({
   reducer: {

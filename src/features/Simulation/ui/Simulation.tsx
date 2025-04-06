@@ -11,17 +11,44 @@ export const Simulation = () => {
   );
   const { setSimulationState } = useSimulationActions();
   const [getSimulation] = useGetSimulationMutation();
+  const shelves = useAppSelector((state) => state.shelves.items);
+  const storeSize = useAppSelector((state) => state.store);
 
   const onSimulate = async () => {
     const result = await getSimulation({
-      config: {},
+      config: {
+        cashDesks: shelves
+          .filter((shelf) => shelf.type === "cashier")
+          .map((shelf) => ({
+            x: shelf.x,
+            y: 0,
+            z: shelf.y,
+          })),
+
+        createdAt: moment(time).toISOString(),
+        shelves: shelves
+          .filter((shelf) => shelf.type !== "cashier")
+          .map((shelf) => ({
+            id: shelf.id,
+            position: { x: shelf.x, y: 0, z: shelf.y },
+            rotation: shelf.rotation,
+            interactions: shelf.interactions,
+            discount: shelf.discount,
+          })),
+        storeSize,
+        entrance: { x: storeSize.width / 2, y: 0, z: storeSize.length / 2 },
+      },
+      timeOfDay: moment(time).format("HH:mm"),
     });
-    setSimulationState(result);
+    if (result.data) {
+      setSimulationState(result.data);
+    }
   };
 
   useEffect(() => {
     if (isRunning && lastMinute !== moment(time).get("minutes")) {
       setLastMinute(moment(time).get("minutes"));
+      onSimulate();
     }
   }, [time]);
 

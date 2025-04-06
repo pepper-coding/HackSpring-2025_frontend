@@ -9,6 +9,7 @@ import { useAppSelector } from "@/shared/hooks/useAppSelector";
 import { useShelvesActions } from "@/entities/Shelves";
 import { CustomerList } from "@/entities/Customers";
 import { Orbit } from "@/features/Orbit";
+import { Simulation } from "@/features/Simulation";
 
 interface StoreCanvasProps {
   showAnalytics: boolean;
@@ -92,6 +93,7 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
         <CustomerList />
         <Orbit selectedShelfId={selectedShelfId} />
         <Stats />
+        <Simulation />
         <gridHelper args={[SQUARE_SIZE, SQUARE_SIZE]} />
         <axesHelper args={[5]} />
       </Canvas>

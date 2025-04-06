@@ -1,3 +1,4 @@
+export { simulationApi } from "./api/simulation.api";
 export {
   simulationReducer,
   useSimulationActions,

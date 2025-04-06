@@ -17,9 +17,9 @@ export function CustomerList() {
 
   const lineRefs = useRef<Record<string, THREE.Line | undefined>>({});
 
-useEffect(() => {
-  lineRefs.current = {};
-}, []);
+  useEffect(() => {
+    lineRefs.current = {};
+  }, []);
 
   useFrame(() => {
     customers.forEach((customer) => {
@@ -39,9 +39,9 @@ useEffect(() => {
 
         if (targetShelf) {
           const targetPosition = new THREE.Vector3(
-            targetShelf.position.x,
+            targetShelf.x,
             0,
-            targetShelf.position.z
+            targetShelf.y
           );
 
           const customerPosition = new THREE.Vector3(
@@ -86,11 +86,15 @@ useEffect(() => {
             };
             if (lineRefs.current[customer.id]) {
               const line = lineRefs.current[customer.id];
-              line.geometry.setFromPoints([
-                new THREE.Vector3(customer.position.x, 0.1, customer.position.z),
+              line?.geometry.setFromPoints([
+                new THREE.Vector3(
+                  customer.position.x,
+                  0.1,
+                  customer.position.z
+                ),
                 targetPosition.clone().setY(0.1),
               ]);
-              line.geometry.attributes.position.needsUpdate = true;
+              line!.geometry.attributes.position.needsUpdate = true;
             }
             updateCustomerPosition({
               id: customer.id,
@@ -114,14 +118,15 @@ useEffect(() => {
         <group key={customer.id}>
           <Customer customer={customer} />
           {customer.targetShelfId && (
+            // @ts-ignore
             <line ref={(el) => (lineRefs.current[customer.id] = el)}>
               <bufferGeometry attach="geometry" />
-              <lineBasicMaterial 
-                attach="material" 
-                color="white" 
-                linewidth={1} 
-                transparent 
-                opacity={0.5} 
+              <lineBasicMaterial
+                attach="material"
+                color="white"
+                linewidth={1}
+                transparent
+                opacity={0.5}
               />
             </line>
           )}

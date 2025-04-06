@@ -4,11 +4,11 @@ import {
   SimulationResponse,
 } from "../model/types/Simulation";
 
-const simulationApi = storeApi.injectEndpoints({
+export const simulationApi = storeApi.injectEndpoints({
   endpoints: (builder) => ({
     getSimulation: builder.mutation<SimulationResponse, SimulationRequest>({
       query: (body) => ({
-        url: "/simulation",
+        url: "/simulation/run",
         method: "POST",
         body,
       }),

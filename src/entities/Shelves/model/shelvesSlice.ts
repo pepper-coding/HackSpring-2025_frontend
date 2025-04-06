@@ -10,7 +10,7 @@ export type ShelfType =
   | "vegetables"
   | "general"
   | "wall"
-    "cashier";
+  | "cashier";
 export type ShelfSize = "small" | "medium" | "large";
 
 export interface Shelf {
@@ -21,6 +21,7 @@ export interface Shelf {
   y: number;
   rotation: number;
   interactions: number;
+  discount?: number;
 }
 
 interface ShelvesState {
