@@ -1,13 +1,12 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useMemo } from "react";
 import {
   useShelvesActions,
   type Shelf as ShelfModel,
 } from "@/entities/Shelves/model/shelvesSlice";
-import { Box, Text, Sphere } from "@react-three/drei";
+import { Box, Text, Instance, Instances } from "@react-three/drei";
 import type * as THREE from "three";
-import { useMemo } from "react";
 import {
   shelfColors,
   shelfSizes,
@@ -30,8 +29,19 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
     const [width, height, depth] = shelfSizes[size];
     const color = shelfColors[type] || "#b8b8ff";
 
-    const products = useMemo(() => {
-      const items = [];
+    const shelfData = useMemo(() => {
+      const shelves = [0.25, 0.5, 0.75].map((pos, index) => ({
+        key: `shelf-${index}`,
+        position: [0, -height / 2 + height * pos, 0],
+        size: [width - 0.05, 0.05, depth - 0.05],
+      }));
+
+      return { shelves };
+    }, [size]);
+
+    const productData = useMemo(() => {
+      const spheres = [];
+      const boxes = [];
       const shelfPositions = [0.25, 0.5, 0.75];
 
       const shelfProductTypes = [
@@ -47,7 +57,6 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
           productColorPalettes[productType] || productColorPalettes.general;
 
         const productCount = Math.max(3, Math.floor(width / 0.4));
-
         const isSphere = i % 2 === 0;
 
         for (let j = 0; j < productCount; j++) {
@@ -56,33 +65,45 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
           const productDepth = isSphere ? 0.15 : 0.15;
 
           const xPos = -width / 2 + (width / (productCount + 1)) * (j + 1);
-
           const colorIndex = j % colorPalette.length;
           const productColor = colorPalette[colorIndex];
 
-          items.push({
+          const product = {
             id: `${i}-${j}`,
-            type: isSphere ? "sphere" : "box",
             position: [
               xPos,
               shelfY + 0.05,
               -depth / 2 + 0.1 + depth * 0.6 * 0.5,
-            ],
-            size: isSphere
-              ? productWidth
-              : [productWidth, productHeight, productDepth],
+            ] as [number, number, number],
             color: productColor,
-          });
+          };
+
+          if (isSphere) {
+            spheres.push({
+              ...product,
+              radius: productWidth,
+            });
+          } else {
+            boxes.push({
+              ...product,
+              size: [productWidth, productHeight, productDepth] as [
+                number,
+                number,
+                number
+              ],
+            });
+          }
         }
       }
 
-      return items;
-    }, [width, height, depth, type]);
+      return { spheres, boxes };
+    }, [size]);
 
     const handleInteraction = () => {
       incrementInteraction(id);
       recordInteraction(id);
     };
+
     if (type === "cashier") {
       return (
         <group
@@ -139,19 +160,18 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
           >
             CashRegister
           </Text>
-          {isSelected && (
-            <Box args={[1.6, 1.1, 1.1]}>
-              <meshStandardMaterial
-                color="#ffff00"
-                wireframe
-                opacity={0.5}
-                transparent
-              />
-            </Box>
-          )}
+          <Box visible={isSelected} args={[1.6, 1.1, 1.1]}>
+            <meshStandardMaterial
+              color="#ffff00"
+              wireframe
+              opacity={0.5}
+              transparent
+            />
+          </Box>
         </group>
       );
     }
+
     if (type === "wall") {
       return (
         <group
@@ -178,6 +198,7 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
       );
     }
 
+    // Рендеринг стандартной полки
     return (
       <group
         ref={ref}
@@ -234,42 +255,46 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
           <meshStandardMaterial color={color} />
         </Box>
 
-        {[0.25, 0.5, 0.75].map((pos, index) => (
-          <Box
-            key={index}
-            args={[width - 0.05, 0.05, depth - 0.05]}
-            position={[0, -height / 2 + height * pos, 0]}
-            castShadow
-          >
-            <meshStandardMaterial color="#d0d0d0" />
-          </Box>
-        ))}
+        <Instances>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial color="#d0d0d0" />
+          {shelfData.shelves.map((shelf) => (
+            <Instance
+              key={shelf.key}
+              position={shelf.position as [number, number, number]}
+              scale={shelf.size as [number, number, number]}
+              castShadow
+            />
+          ))}
+        </Instances>
 
-        {products.map((product) => {
-          if (product.type === "sphere") {
-            return (
-              <Sphere
-                key={product.id}
-                args={[product.size as number, 16, 16]}
-                position={product.position as [number, number, number]}
-                castShadow
-              >
-                <meshStandardMaterial color={product.color} />
-              </Sphere>
-            );
-          } else {
-            return (
-              <Box
-                key={product.id}
-                args={product.size as [number, number, number]}
-                position={product.position as [number, number, number]}
-                castShadow
-              >
-                <meshStandardMaterial color={product.color} />
-              </Box>
-            );
-          }
-        })}
+        <Instances visible={productData.spheres.length > 0}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshStandardMaterial />
+          {productData.spheres.map((sphere) => (
+            <Instance
+              key={sphere.id}
+              position={sphere.position}
+              scale={sphere.radius}
+              color={sphere.color}
+              castShadow
+            />
+          ))}
+        </Instances>
+
+        <Instances visible={productData.boxes.length > 0}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial />
+          {productData.boxes.map((box) => (
+            <Instance
+              key={box.id}
+              position={box.position}
+              scale={box.size}
+              color={box.color}
+              castShadow
+            />
+          ))}
+        </Instances>
 
         <Text
           position={[0, height / 2 + 0.2, 0]}
@@ -292,16 +317,17 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
           {`Interactions: ${shelf.interactions}`}
         </Text>
 
-        {isSelected && (
-          <Box args={[width + 0.1, height + 0.1, depth + 0.1]}>
-            <meshStandardMaterial
-              color="#ffff00"
-              wireframe
-              opacity={0.5}
-              transparent
-            />
-          </Box>
-        )}
+        <Box
+          visible={isSelected}
+          args={[width + 0.1, height + 0.1, depth + 0.1]}
+        >
+          <meshStandardMaterial
+            color="#ffff00"
+            wireframe
+            opacity={0.5}
+            transparent
+          />
+        </Box>
       </group>
     );
   }

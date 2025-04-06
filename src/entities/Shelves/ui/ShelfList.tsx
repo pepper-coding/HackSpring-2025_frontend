@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ThreeEvent, useThree } from "@react-three/fiber";
+import { ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useAppSelector } from "@/shared/hooks/useAppSelector";
 import { ShelfModel } from "@/entities/Shelves";
 import * as THREE from "three";
@@ -31,13 +31,30 @@ export function ShelfList() {
   const raycaster = useRef(new THREE.Raycaster());
   const pointer = useRef(new THREE.Vector2());
   const offset = useRef(new THREE.Vector3());
+  const targetPosition = useRef(new THREE.Vector3());
+  const pointerIsDown = useRef(false);
+
+  useFrame(() => {
+    if (!draggingId || !pointerIsDown.current) return;
+
+    const group = groupRefs.current[draggingId];
+    if (!group) return;
+
+    raycaster.current.setFromCamera(pointer.current, camera);
+    const intersection = new THREE.Vector3();
+
+    if (raycaster.current.ray.intersectPlane(plane.current, intersection)) {
+      targetPosition.current.copy(intersection).sub(offset.current);
+
+      group.position.lerp(targetPosition.current, 0.5);
+    }
+  });
 
   const handlePointerDown = (
     event: ThreeEvent<PointerEvent>,
     shelfId: string
   ) => {
     event.stopPropagation();
-    if (draggingId) return;
 
     const group = groupRefs.current[shelfId];
     if (!group) return;
@@ -59,50 +76,45 @@ export function ShelfList() {
 
     raycaster.current.setFromCamera(pointer.current, camera);
     const intersection = new THREE.Vector3();
-    raycaster.current.ray.intersectPlane(plane.current, intersection);
 
-    offset.current.copy(intersection).sub(group.position);
+    if (raycaster.current.ray.intersectPlane(plane.current, intersection)) {
+      offset.current.copy(intersection).sub(group.position);
 
-    setDraggingId(shelfId);
-    selectShelf(shelfId);
-    gl.domElement.style.cursor = "grabbing";
+      setDraggingId(shelfId);
+      selectShelf(shelfId);
+      gl.domElement.style.cursor = "grabbing";
+      pointerIsDown.current = true;
+    }
   };
 
   const handlePointerMove = (event: MouseEvent) => {
-    if (!draggingId) return;
-
-    const group = groupRefs.current[draggingId];
-    if (!group) return;
-
     pointer.current.set(
       (event.clientX / window.innerWidth) * 2 - 1,
       -(event.clientY / window.innerHeight) * 2 + 1
     );
-
-    raycaster.current.setFromCamera(pointer.current, camera);
-    const intersection = new THREE.Vector3();
-    raycaster.current.ray.intersectPlane(plane.current, intersection);
-
-    group.position.copy(intersection.sub(offset.current));
   };
 
   const handlePointerUp = () => {
     if (!draggingId) return;
 
+    pointerIsDown.current = false;
+
     const group = groupRefs.current[draggingId];
     if (group) {
-      console.log({
+      const snapPosition = {
         x: Math.round(group.position.x / SQUARE_SIZE) * SQUARE_SIZE,
         y: group.position.y,
         z: Math.round(group.position.z / SQUARE_SIZE) * SQUARE_SIZE,
-      });
-      console.log(group.position);
+      };
+
+      group.position.set(snapPosition.x, snapPosition.y, snapPosition.z);
+
       updateShelfPosition({
         id: draggingId,
         position: {
-          x: Math.round(group.position.x / SQUARE_SIZE) * SQUARE_SIZE,
-          y: group.position.y,
-          z: Math.round(group.position.z / SQUARE_SIZE) * SQUARE_SIZE,
+          x: snapPosition.x,
+          y: snapPosition.y,
+          z: snapPosition.z,
         },
       });
     }
@@ -148,7 +160,7 @@ export function ShelfList() {
         return (
           <group
             key={shelf.id}
-            position={[shelf.x, baseY, shelf.y]}
+            position={[shelf.x, baseY + 0.0002, shelf.y]}
             rotation={[0, shelf.rotation, 0]}
             onPointerDown={(e) => handlePointerDown(e, shelf.id)}
             onPointerOver={(e) => handlePointerOver(e, shelf.id)}
@@ -166,19 +178,17 @@ export function ShelfList() {
               isSelected={shelf.id === selectedShelfId}
               onClick={() => !draggingId && selectShelf(shelf.id)}
             />
-            {
-              <Text
-                position={[size.width / 2 + 0.1, size.height / 2 + 0.1, 0]}
-                fontSize={0.2}
-                color="orange"
-                anchorX="center"
-                anchorY="middle"
-                userData={{ isRotateButton: true }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                🔄
-              </Text>
-            }
+            <Text
+              position={[size.width / 2 + 0.1, size.height / 2 + 0.1, 0]}
+              fontSize={0.2}
+              color="orange"
+              anchorX="center"
+              anchorY="middle"
+              userData={{ isRotateButton: true }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              🔄
+            </Text>
           </group>
         );
       })}

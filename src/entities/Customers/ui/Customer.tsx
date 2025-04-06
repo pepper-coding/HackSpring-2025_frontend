@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo, JSX } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Box, Cylinder } from "@react-three/drei";
 import * as THREE from "three";
@@ -10,59 +10,88 @@ interface CustomerProps {
   customer: CustomerType;
 }
 
-export function Customer({ customer }: CustomerProps) {
+interface AnimationState {
+  walkCycle: number;
+  isWalking: boolean;
+}
+
+export function Customer({ customer }: CustomerProps): JSX.Element {
   const { position, targetPosition } = customer;
+
   const groupRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Group>(null);
   const rightLegRef = useRef<THREE.Group>(null);
 
-  const walkCycle = useRef(0);
-  const isWalking = useRef(false);
+  const animState = useRef<AnimationState>({
+    walkCycle: 0,
+    isWalking: false,
+  });
 
-  useFrame((state, delta) => {
+  const direction = useMemo(() => {
+    return Math.atan2(
+      targetPosition.x - position.x,
+      targetPosition.z - position.z
+    );
+  }, [position.x, position.z, targetPosition.x, targetPosition.z]);
+
+  useFrame((_, delta) => {
     if (!groupRef.current) return;
 
-    isWalking.current = !(
-      Math.abs(position.x - targetPosition.x) < 0.1 &&
-      Math.abs(position.z - targetPosition.z) < 0.1
-    );
+    groupRef.current.position.set(position.x, position.y + 0.9, position.z);
 
-    // Анимация ходьбы
-    if (isWalking.current) {
-      walkCycle.current += delta * 5;
-      const legAngle = Math.sin(walkCycle.current) * 0.5;
+    groupRef.current.rotation.y = direction;
 
-      if (leftLegRef.current) leftLegRef.current.rotation.x = legAngle;
-      if (rightLegRef.current) rightLegRef.current.rotation.x = -legAngle;
+    const isMoving =
+      Math.abs(position.x - targetPosition.x) > 0.1 ||
+      Math.abs(position.z - targetPosition.z) > 0.1;
+
+    animState.current.isWalking = isMoving;
+
+    if (animState.current.isWalking) {
+      animState.current.walkCycle += delta * 5;
+
+      const legAngle = Math.sin(animState.current.walkCycle) * 0.5;
+
+      if (leftLegRef.current) {
+        leftLegRef.current.rotation.x = legAngle;
+      }
+
+      if (rightLegRef.current) {
+        rightLegRef.current.rotation.x = -legAngle;
+      }
     } else {
-      if (leftLegRef.current)
+      if (leftLegRef.current) {
         leftLegRef.current.rotation.x = THREE.MathUtils.lerp(
           leftLegRef.current.rotation.x,
           0,
           delta * 5
         );
-      if (rightLegRef.current)
+      }
+
+      if (rightLegRef.current) {
         rightLegRef.current.rotation.x = THREE.MathUtils.lerp(
           rightLegRef.current.rotation.x,
           0,
           delta * 5
         );
+      }
     }
   });
 
   return (
-    <group ref={groupRef} position={[position.x, position.y + 0.9, position.z]}>
-      {/* Тело */}
+    <group
+      ref={groupRef}
+      position={[position.x, position.y + 0.9, position.z]}
+      rotation={[0, direction, 0]}
+    >
       <Box args={[0.4, 0.8, 0.3]} position={[0, 0, 0]} castShadow>
         <meshStandardMaterial color="#ff9e80" />
       </Box>
 
-      {/* Голова (сфера) */}
       <Box args={[0.3, 0.3, 0.3]} position={[0, 0.5, 0]} castShadow>
         <meshStandardMaterial color="#ffcc80" />
       </Box>
 
-      {/* Левая рука */}
       <group position={[-0.25, 0.2, 0]}>
         <Cylinder
           args={[0.05, 0.05, 0.5, 8]}
@@ -74,7 +103,6 @@ export function Customer({ customer }: CustomerProps) {
         </Cylinder>
       </group>
 
-      {/* Правая рука */}
       <group position={[0.25, 0.2, 0]}>
         <Cylinder
           args={[0.05, 0.05, 0.5, 8]}
@@ -86,7 +114,6 @@ export function Customer({ customer }: CustomerProps) {
         </Cylinder>
       </group>
 
-      {/* Левая нога */}
       <group ref={leftLegRef} position={[-0.1, -0.4, 0]}>
         <Cylinder
           args={[0.07, 0.07, 0.6, 8]}
@@ -97,7 +124,6 @@ export function Customer({ customer }: CustomerProps) {
         </Cylinder>
       </group>
 
-      {/* Правая нога */}
       <group ref={rightLegRef} position={[0.1, -0.4, 0]}>
         <Cylinder
           args={[0.07, 0.07, 0.6, 8]}
