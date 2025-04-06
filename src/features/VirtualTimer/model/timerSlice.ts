@@ -1,5 +1,6 @@
 import { buildSlice } from "@/shared/lib/store/buildStore";
 import { PayloadAction } from "@reduxjs/toolkit";
+import moment from "moment";
 
 interface TimerSchema {
   time: string;
@@ -8,7 +9,7 @@ interface TimerSchema {
 }
 
 const initialState: TimerSchema = {
-  time: new Date().toISOString(),
+  time: moment().toISOString(),
   isRunning: false,
   booster: 1,
 };

@@ -9,38 +9,32 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Button } from "@/shared/components/ui/button";
-
-const formatTime = (time: number): string => {
-  const hours = (Math.floor(time / 3600) % 24).toString().padStart(2, "0");
-  const minutes = (Math.floor((time % 3600) / 60) % 60)
-    .toString()
-    .padStart(2, "0");
-  const sec = Math.round(time % 60)
-    .toString()
-    .padStart(2, "0");
-  return `${hours}:${minutes}:${sec}`;
-};
+import moment from "moment";
 
 export const VirtualTimer = () => {
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const { setBooster, setIsRunning, setTime } = useTimerActions();
   const { booster, isRunning, time } = useAppSelector((state) => state.timer);
+  const handleTimeChange = () => {
+    if (isRunning) {
+      const newTime = moment(time).add(1, "seconds");
+      setTime(newTime.toISOString());
+    }
+  };
+
+  const callbackRef = useRef(handleTimeChange);
+
+  callbackRef.current = handleTimeChange;
 
   useEffect(() => {
-    timer.current = setInterval(() => {
-      if (isRunning) {
-        const date = new Date(time);
-        date.setSeconds(date.getSeconds() + 5);
-        setTime(date.toISOString());
-      }
-    }, 1000 / booster);
+    timer.current = setInterval(() => callbackRef.current(), 200 / booster);
     return () => {
       if (timer.current) {
         clearInterval(timer.current);
-        setIsRunning(false);
+        timer.current = null;
       }
     };
-  }, [booster, isRunning, time, setTime]);
+  }, [booster, isRunning]);
 
   const handleStartStop = () => {
     setIsRunning(!isRunning);
@@ -48,7 +42,7 @@ export const VirtualTimer = () => {
 
   return (
     <div className="flex items-center gap-2 ">
-      <p>{formatTime(new Date(time).getTime() / 1000)}</p>
+      <p className="font-semibold">{moment(time).format("HH:mm:ss")}</p>
       <Button onClick={handleStartStop}>{isRunning ? "Stop" : "Start"}</Button>
       <Select
         value={String(booster)}
