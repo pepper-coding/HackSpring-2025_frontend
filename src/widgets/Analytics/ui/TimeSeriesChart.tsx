@@ -41,7 +41,6 @@ const shelfTypeColors: Record<string, string> = {
   bakery: "#38b2ac", // teal  
   produce: "#ed8936", // orange
   meat: "#f56565", // red
-  general: "#9f7aea", // purple
 };
 
 // Fallback color

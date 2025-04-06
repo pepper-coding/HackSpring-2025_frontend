@@ -25,7 +25,7 @@ import { useAppSelector } from "@/shared/hooks/useAppSelector";
 import { Loader } from "lucide-react";
 
 export const ShelfForm = () => {
-  const [shelfType, setShelfType] = useState<ShelfType>("general");
+  const [shelfType, setShelfType] = useState<ShelfType>("vegetables");
   const [shelfSize, setShelfSize] = useState<ShelfSize>("medium");
   const { addShelf } = useShelvesActions();
   const { width, length, id } = useAppSelector((state) => state.store);
@@ -103,7 +103,6 @@ export const ShelfForm = () => {
                 <SelectItem value="bakery">Bakery</SelectItem>
                 <SelectItem value="produce">Produce</SelectItem>
                 <SelectItem value="meat">Meat</SelectItem>
-                <SelectItem value="general">General</SelectItem>
                 <SelectItem value="wall">Wall</SelectItem>
               </SelectContent>
             </Select>

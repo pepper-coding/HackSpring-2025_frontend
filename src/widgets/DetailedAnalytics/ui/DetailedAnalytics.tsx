@@ -85,7 +85,6 @@ const shelfColors: Record<string, string> = {
   bakery: "#dcedc1",
   produce: "#ffd3b6",
   meat: "#ffaaa5",
-  general: "#b8b8ff",
 };
 
 const chartColors = Object.values(shelfColors);
