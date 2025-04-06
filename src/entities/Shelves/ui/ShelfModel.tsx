@@ -54,7 +54,7 @@ export const Shelf = forwardRef<THREE.Group, ShelfProps>(
         const shelfY = -height / 2 + height * shelfPositions[i];
         const productType = shelfProductTypes[i];
         const colorPalette =
-          productColorPalettes[productType] || productColorPalettes.general;
+          productColorPalettes[productType] || productColorPalettes;
 
         const productCount = Math.max(3, Math.floor(width / 0.4));
         const isSphere = i % 2 === 0;
