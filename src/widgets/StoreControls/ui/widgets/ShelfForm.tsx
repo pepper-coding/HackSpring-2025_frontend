@@ -57,6 +57,31 @@ export const ShelfForm = () => {
     });
   };
 
+  const handleAddCashRegister = async () => {
+    const x =
+      Math.round(((Math.random() - 0.5) * (Number(width) - 2)) / SQUARE_SIZE) *
+      SQUARE_SIZE;
+    const z =
+      Math.round(((Math.random() - 0.5) * (Number(length) - 2)) / SQUARE_SIZE) *
+      SQUARE_SIZE;
+
+    await createShelf({
+      type: "cashier",
+      size: "medium",
+      x,
+      y: z,
+      presetId: id,
+      name: "cashier",
+      interactions: 0,
+      rotation: 0,
+    });
+    addShelf({
+      type: "cashier",
+      size: "medium",
+      position: { x, y: 0, z },
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -102,13 +127,7 @@ export const ShelfForm = () => {
           </div>
           <Button 
             className="w-full"
-            onClick={() => {
-              addShelf({
-                type: "cashier",
-                size: "medium",
-                position: { x: 0, y: 0, z: 0 }
-              });
-            }}
+            onClick={handleAddCashRegister}
             style={{
               backgroundColor: "#6bb8ff",
               color: "white",
