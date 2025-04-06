@@ -5,6 +5,7 @@ import { storeReducer } from "@/entities/Preset";
 import { shelvesReducer } from "@/entities/Shelves";
 import { customersReducer } from "@/entities/Customers";
 import { analyticsReducer } from "@/entities/Analytics";
+import { timerReducer } from "@/features/VirtualTimer";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     shelves: shelvesReducer,
     customers: customersReducer,
     analytics: analyticsReducer,
+    timer: timerReducer,
     [storeApi.reducerPath]: storeApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

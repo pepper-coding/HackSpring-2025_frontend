@@ -13,6 +13,7 @@ import { DetailedAnalytics } from "@/widgets/DetailedAnalytics";
 import { StoreProvider } from "@/app/providers/store";
 import { useUpdateManyShelvesMutation } from "@/entities/Shelves/api/shelves.api";
 import { Loader } from "lucide-react";
+import { VirtualTimer } from "@/features/VirtualTimer";
 
 export interface HeaderProps {
   setShowAnalytics: (showAnalytics: boolean) => void;
@@ -37,6 +38,7 @@ export const Header: FC<HeaderProps> = ({
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">3D Store Planner</h1>
           <div className="flex gap-2">
+            <VirtualTimer />
             <button
               onClick={handleSavePreset}
               className="px-4 py-2 bg-green-600 text-white rounded-md"
