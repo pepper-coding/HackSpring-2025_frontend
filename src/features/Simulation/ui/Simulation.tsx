@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSimulationActions } from "../model/slice/simulationSlice";
 import { useGetSimulationMutation } from "../api/simulation.api";
 import { useCustomersActions } from "@/entities/Customers";
+import { useAnalyticsActions } from "@/entities/Analytics";
 
 export const Simulation = () => {
   const { time, isRunning } = useAppSelector((state) => state.timer);
@@ -12,11 +13,23 @@ export const Simulation = () => {
   );
   const { setSimulationState } = useSimulationActions();
   const { setCustomersFromSimulation } = useCustomersActions();
+  const { setSimulationStats } = useAnalyticsActions();
   const [getSimulation] = useGetSimulationMutation();
   const shelves = useAppSelector((state) => state.shelves.items);
   const storeSize = useAppSelector((state) => state.store);
+  
+  // Add debug output for simulation state
+  const simulationState = useAppSelector(state => state.simulation.simulationState);
+  useEffect(() => {
+    console.log('Current simulation state:', simulationState);
+    if (simulationState?.heatmap) {
+      console.log('Heatmap dimensions:', simulationState.heatmap.length, 'x', 
+                 simulationState.heatmap[0]?.length);
+    }
+  }, [simulationState]);
 
   const onSimulate = async () => {
+    console.log('Running simulation...');
     const result = await getSimulation({
       config: {
         cashDesks: shelves
@@ -44,10 +57,31 @@ export const Simulation = () => {
     });
     
     if (result.data) {
-      setSimulationState(result.data);
+      console.log('Simulation data received:', result.data);
+      console.log('Heatmap data received:', result.data.heatmap);
+      
+      const { visitors, ...simulationDataWithoutVisitors } = result.data;
+      
+      // Убедимся, что тепловая карта не потеряется при сохранении
+      if (!simulationDataWithoutVisitors.heatmap && result.data.heatmap) {
+        console.log("Explicitly preserving heatmap data");
+        simulationDataWithoutVisitors.heatmap = result.data.heatmap;
+      }
+      
+      setSimulationState(simulationDataWithoutVisitors);
       setCustomersFromSimulation({ visitors: result.data.visitors });
+      
+      if (result.data.stats) {
+        setSimulationStats(result.data.stats);
+      }
     }
   };
+
+  // Запускаем симуляцию при первом рендере, чтобы получить данные тепловой карты
+  useEffect(() => {
+    console.log('Initial simulation run...');
+    onSimulate();
+  }, []);
 
   useEffect(() => {
     if (isRunning && lastMinute !== moment(time).get("minutes")) {

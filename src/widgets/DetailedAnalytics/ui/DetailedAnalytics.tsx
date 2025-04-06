@@ -16,7 +16,7 @@ import {
 } from "@/shared/components/ui/tabs";
 import { ShelfInteractionsChart } from "@/widgets/Analytics/ui/ShelfInteractionsChart";
 import { TimeSeriesChart } from "@/widgets/Analytics/ui/TimeSeriesChart";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -68,6 +68,129 @@ interface ShelfInteractionData {
   size: string;
 }
 
+// Add an interface for simulation stats
+interface SimulationStats {
+  total_visitors: number;
+  avg_queue_time: number;
+  max_queue_length: number;
+  time_of_day: string;
+  calculated_visitors: number;
+  cash_desk_queues: Record<string, number>;
+}
+
+// Add HeatmapVisualization component
+const HeatmapVisualization = ({ heatmapData }: { heatmapData: number[][] }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  useEffect(() => {
+    if (!canvasRef.current || !heatmapData || heatmapData.length === 0) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const rows = heatmapData.length;
+    const cols = heatmapData[0].length;
+    
+    const cellWidth = canvas.width / cols;
+    const cellHeight = canvas.height / rows;
+    
+    // Find the maximum value in the heatmap to normalize colors
+    let maxValue = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        maxValue = Math.max(maxValue, heatmapData[r][c]);
+      }
+    }
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw heatmap
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const value = heatmapData[r][c];
+        if (value > 0) {
+          // Calculate color intensity (0-1)
+          const intensity = value / maxValue;
+          
+          // Use a color gradient from blue (cold) to red (hot)
+          const r = Math.floor(255 * intensity);
+          const g = Math.floor(100 * (1 - intensity));
+          const b = Math.floor(255 * (1 - intensity));
+          
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.8)`;
+          ctx.fillRect(c * cellWidth, r * cellHeight, cellWidth, cellHeight);
+          
+          // Add value text for cells with significant values
+          if (value > maxValue * 0.5) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(
+              value.toString(),
+              c * cellWidth + cellWidth / 2,
+              r * cellHeight + cellHeight / 2
+            );
+          }
+        }
+      }
+    }
+    
+    // Draw grid
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.lineWidth = 0.5;
+    
+    for (let r = 0; r <= rows; r++) {
+      ctx.beginPath();
+      ctx.moveTo(0, r * cellHeight);
+      ctx.lineTo(canvas.width, r * cellHeight);
+      ctx.stroke();
+    }
+    
+    for (let c = 0; c <= cols; c++) {
+      ctx.beginPath();
+      ctx.moveTo(c * cellWidth, 0);
+      ctx.lineTo(c * cellWidth, canvas.height);
+      ctx.stroke();
+    }
+  }, [heatmapData]);
+  
+  if (!heatmapData || heatmapData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 border rounded-lg bg-muted/20">
+        <p className="text-muted-foreground">No heatmap data available</p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="border rounded-lg p-2 bg-white">
+      <canvas 
+        ref={canvasRef} 
+        width={500} 
+        height={400} 
+        className="w-full h-auto"
+      />
+      <div className="flex justify-between mt-2 text-xs">
+        <div className="flex items-center">
+          <div className="w-3 h-3 bg-blue-500 mr-1 rounded-sm"></div>
+          <span>Low traffic</span>
+        </div>
+        <div className="flex items-center">
+          <div className="w-3 h-3 bg-purple-500 mr-1 rounded-sm"></div>
+          <span>Medium traffic</span>
+        </div>
+        <div className="flex items-center">
+          <div className="w-3 h-3 bg-red-500 mr-1 rounded-sm"></div>
+          <span>High traffic</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -95,6 +218,15 @@ export function DetailedAnalytics() {
     (state) => state.analytics.shelfInteractions
   );
   const timeData = useAppSelector((state) => state.analytics.timeData);
+  // Add simulation stats from the store
+  const simulationStats = useAppSelector(
+    (state) => state.analytics.simulationStats as SimulationStats
+  );
+  
+  // Get heatmap data from simulation store
+  const heatmapData = useAppSelector(
+    (state) => state.simulation.simulationState?.heatmap
+  );
 
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
@@ -111,12 +243,34 @@ export function DetailedAnalytics() {
   const interactionData = useMemo<ShelfInteractionData[]>(() => {
     return Object.entries(shelfInteractions).map(([shelfId, count]) => {
       const shelf = shelves.find((s) => s.id === shelfId);
+      
+      // Парсим информацию из ID полки, если не удалось найти полку в списке
+      let shelfType = shelf?.type;
+      let shelfSize = shelf?.size;
+      
+      // Если информации нет, попробуем извлечь из ID (например: "small-dairy-123456")
+      if ((!shelfType || !shelfSize) && shelfId) {
+        const parts = shelfId.split('-');
+        if (parts.length >= 2) {
+          // Первая часть обычно размер (small, medium, large)
+          if (!shelfSize && ['small', 'medium', 'large'].includes(parts[0])) {
+            shelfSize = parts[0];
+          }
+          
+          // Вторая часть обычно тип (dairy, bakery, produce, meat)
+          if (!shelfType && ['dairy', 'bakery', 'produce', 'meat', 'cashier'].includes(parts[1])) {
+            shelfType = parts[1];
+          }
+        }
+      }
+      
       return {
         id: shelfId,
-        name: shelf ? `${shelf.type} (${shelf.size})` : "Unknown",
+        name: shelf ? `${shelf.type} (${shelf.size})` : 
+             (shelfType && shelfSize) ? `${shelfType} (${shelfSize})` : "Unknown",
         value: count,
-        type: shelf?.type || "unknown",
-        size: shelf?.size || "unknown",
+        type: shelfType || "unknown",
+        size: shelfSize || "unknown",
       };
     });
   }, [shelfInteractions, shelves]);
@@ -531,6 +685,68 @@ export function DetailedAnalytics() {
         </Button>
       </div>
 
+      {/* Display Simulation Stats */}
+      {simulationStats && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Simulation Results</CardTitle>
+            <CardDescription>
+              Results from the latest simulation run at {simulationStats.time_of_day}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Visitors
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{simulationStats.total_visitors}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Average Queue Time
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{simulationStats.avg_queue_time.toFixed(2)} min</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Maximum Queue Length
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{simulationStats.max_queue_length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Time of Day
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{simulationStats.time_of_day}</div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Add Heatmap Visualization */}
+            <div className="mt-4">
+              <h3 className="text-lg font-medium mb-2">Store Traffic Heatmap</h3>
+              <HeatmapVisualization heatmapData={heatmapData || []} />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {compareMode && (
         <Card>
           <CardHeader className="pb-2">
@@ -866,11 +1082,26 @@ export function DetailedAnalytics() {
                       const shelf = shelves.find(
                         (s) => s.id === dataset.shelfId
                       );
+                      
+                      // Если полка не найдена, попробуем извлечь информацию из ID
+                      let shelfInfo = `Shelf ${index + 1}`;
+                      if (!shelf && dataset.shelfId) {
+                        const parts = dataset.shelfId.split('-');
+                        if (parts.length >= 2) {
+                          const size = ['small', 'medium', 'large'].includes(parts[0]) ? parts[0] : null;
+                          const type = ['dairy', 'bakery', 'produce', 'meat', 'cashier'].includes(parts[1]) ? parts[1] : null;
+                          
+                          if (size && type) {
+                            shelfInfo = `${type} (${size})`;
+                          }
+                        }
+                      }
+                      
                       return (
                         <TableHead key={dataset.shelfId} className="text-right">
                           {shelf
                             ? `${shelf.type} (${shelf.size})`
-                            : `Shelf ${index + 1}`}
+                            : shelfInfo}
                         </TableHead>
                       );
                     })}

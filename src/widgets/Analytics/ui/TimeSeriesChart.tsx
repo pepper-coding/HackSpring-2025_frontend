@@ -49,6 +49,11 @@ const defaultColor = "#48bb78"; // green
 export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
   // Group data by shelf type
   const groupedByType = useMemo(() => {
+    // Если нет данных, возвращаем пустой массив
+    if (!data || !data.datasets || !data.labels || data.labels.length === 0) {
+      return [];
+    }
+    
     // Create a map to store aggregated data by shelf type
     const typeMap: Record<string, number[]> = {};
     
@@ -63,8 +68,16 @@ export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
       const shelf = shelves.find(s => s.id === dataset.shelfId);
       const type = shelf?.type || "unknown";
       
+      // Проверяем, что массив существует и инициализирован
+      if (!typeMap[type]) {
+        typeMap[type] = Array(data.labels.length).fill(0);
+      }
+      
       dataset.data.forEach((value, index) => {
-        typeMap[type][index] = (typeMap[type][index] || 0) + value;
+        // Убедимся, что массив существует и имеет значение по индексу
+        if (typeMap[type]) {
+          typeMap[type][index] = (typeMap[type][index] || 0) + value;
+        }
       });
     });
     
@@ -80,7 +93,7 @@ export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
   }, [data, shelves]);
 
   const chartData = {
-    labels: data.labels,
+    labels: data?.labels || [],
     datasets: groupedByType,
   };
 
@@ -137,7 +150,7 @@ export function TimeSeriesChart({ data, shelves }: TimeSeriesChartProps) {
 
   return (
     <div className="h-80">
-      {data.datasets.length > 0 ? (
+      {data?.datasets && data.datasets.length > 0 ? (
         <Line data={chartData} options={options} />
       ) : (
         <div className="flex items-center justify-center h-full">

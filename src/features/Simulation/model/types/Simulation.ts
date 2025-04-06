@@ -55,6 +55,7 @@ export interface SimulationResponse {
     max_queue_length: number;
     time_of_day: string;
     calculated_visitors: number;
+    cash_desk_queues?: Record<string, number>;
   };
   store_dimensions: {
     width: number;

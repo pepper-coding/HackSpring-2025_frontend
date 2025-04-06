@@ -6,6 +6,16 @@ interface ShelfInteraction {
   count: number;
 }
 
+// Add SimulationStats interface
+interface SimulationStats {
+  total_visitors: number;
+  avg_queue_time: number;
+  max_queue_length: number;
+  time_of_day: string;
+  calculated_visitors: number;
+  cash_desk_queues: Record<string, number>;
+}
+
 interface AnalyticsState {
   shelfInteractions: Record<string, number>;
   timeData: {
@@ -15,6 +25,8 @@ interface AnalyticsState {
       data: number[];
     }[];
   };
+  // Add simulationStats to state
+  simulationStats?: SimulationStats;
 }
 
 const initialState: AnalyticsState = {
@@ -23,6 +35,7 @@ const initialState: AnalyticsState = {
     labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
     datasets: [],
   },
+  simulationStats: undefined,
 };
 
 export const analyticsSlice = buildSlice({
@@ -53,9 +66,14 @@ export const analyticsSlice = buildSlice({
         state.timeData.datasets.push(newDataset);
       }
     },
+    // Add action to set simulation stats
+    setSimulationStats: (state, action: PayloadAction<SimulationStats>) => {
+      state.simulationStats = action.payload;
+    },
     resetAnalytics: (state) => {
       state.shelfInteractions = {};
       state.timeData.datasets = [];
+      state.simulationStats = undefined;
     },
   },
 });
