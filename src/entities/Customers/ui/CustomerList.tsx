@@ -29,9 +29,11 @@ export function CustomerList() {
         if (shelves.length > 0 && Math.random() < 0.01) {
           const randomShelf =
             shelves[Math.floor(Math.random() * shelves.length)];
+          
           setCustomerTarget({
             id: customer.id,
             targetShelfId: randomShelf.id,
+            targetPosition: { x: randomShelf.x, y: 0, z: randomShelf.y }
           });
         }
       } else {
@@ -66,6 +68,7 @@ export function CustomerList() {
               setCustomerTarget({
                 id: customer.id,
                 targetShelfId: null,
+                targetPosition: { ...customer.position }
               });
             } else {
               const otherShelves = shelves.filter(
@@ -77,6 +80,7 @@ export function CustomerList() {
                 setCustomerTarget({
                   id: customer.id,
                   targetShelfId: newTarget.id,
+                  targetPosition: { x: newTarget.x, y: 0, z: newTarget.y }
                 });
               }
             }

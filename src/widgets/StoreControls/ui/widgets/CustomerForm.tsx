@@ -16,6 +16,7 @@ export const CustomerForm = () => {
   const { length, width, id, customerNumber } = useAppSelector(
     (state) => state.store
   );
+  const shelves = useAppSelector((state) => state.shelves.items);
   const [patchPreset, { isLoading }] = useUpdatePresetMutation();
   const { updatePreset } = useStoreActions();
 
@@ -26,8 +27,17 @@ export const CustomerForm = () => {
 
     patchPreset({ id, customerNumber: customerNumber + 1 });
     updatePreset({ customerNumber: customerNumber + 1 });
+    
+    // Если есть полки, выбираем случайную целевую полку при создании покупателя
+    let targetShelfId = null;
+    if (shelves.length > 0) {
+      const randomShelf = shelves[Math.floor(Math.random() * shelves.length)];
+      targetShelfId = randomShelf.id;
+    }
+    
     addCustomer({
       position: { x, y: 0, z },
+      targetShelfId: targetShelfId
     });
   };
 
