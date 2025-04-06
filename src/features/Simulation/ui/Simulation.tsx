@@ -29,7 +29,7 @@ export const Simulation = () => {
         shelves: shelves
           .filter((shelf) => shelf.type !== "cashier")
           .map((shelf) => ({
-            id: shelf.id,
+            id: `${shelf.size}-${shelf.type}-${shelf.id.replaceAll("-", "_")}`,
             position: { x: shelf.x, y: 0, z: shelf.y },
             rotation: shelf.rotation,
             interactions: shelf.interactions,
