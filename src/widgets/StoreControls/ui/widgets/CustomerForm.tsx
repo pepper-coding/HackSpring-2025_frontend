@@ -28,10 +28,12 @@ export const CustomerForm = () => {
     patchPreset({ id, customerNumber: customerNumber + 1 });
     updatePreset({ customerNumber: customerNumber + 1 });
     
-    // Если есть полки, выбираем случайную целевую полку при создании покупателя
+    // Выбираем случайную полку, исключая кассы
     let targetShelfId = null;
-    if (shelves.length > 0) {
-      const randomShelf = shelves[Math.floor(Math.random() * shelves.length)];
+    const productShelves = shelves.filter(shelf => shelf.type !== "cashier");
+    
+    if (productShelves.length > 0) {
+      const randomShelf = productShelves[Math.floor(Math.random() * productShelves.length)];
       targetShelfId = randomShelf.id;
     }
     

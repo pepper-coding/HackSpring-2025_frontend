@@ -18,6 +18,9 @@ export function CustomerList() {
   const lineRefs = useRef<Record<string, THREE.Line | undefined>>({});
 
   const [movingCustomers, setMovingCustomers] = useState<Set<string>>(new Set());
+  
+  // Ссылка на cashier shelves
+  const cashRegisters = shelves.filter((shelf) => shelf.type === "cashier");
 
   useEffect(() => {
     lineRefs.current = {};
@@ -26,15 +29,19 @@ export function CustomerList() {
   useFrame(() => {
     customers.forEach((customer) => {
       if (!customer.targetShelfId) {
+        // Если покупатель не имеет цели, у него 1% шанс выбрать случайную полку
         if (shelves.length > 0 && Math.random() < 0.01) {
-          const randomShelf =
-            shelves[Math.floor(Math.random() * shelves.length)];
-          
-          setCustomerTarget({
-            id: customer.id,
-            targetShelfId: randomShelf.id,
-            targetPosition: { x: randomShelf.x, y: 0, z: randomShelf.y }
-          });
+          // Выбираем случайную полку (не кассу) в качестве цели
+          const nonCashierShelves = shelves.filter(shelf => shelf.type !== "cashier");
+          if (nonCashierShelves.length > 0) {
+            const randomShelf = nonCashierShelves[Math.floor(Math.random() * nonCashierShelves.length)];
+            
+            setCustomerTarget({
+              id: customer.id,
+              targetShelfId: randomShelf.id,
+              targetPosition: { x: randomShelf.x, y: 0, z: randomShelf.y }
+            });
+          }
         }
       } else {
         const targetShelf = shelves.find(
@@ -64,6 +71,19 @@ export function CustomerList() {
             incrementInteraction(customer.targetShelfId);
             recordInteraction(customer.targetShelfId);
 
+            // Если текущая цель - это касса, удаляем покупателя после взаимодействия
+            if (targetShelf.type === "cashier") {
+              removeCustomer(customer.id);
+              setMovingCustomers((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(customer.id);
+                return newSet;
+              });
+              return; // Прерываем выполнение для этого покупателя
+            }
+
+            // После посещения полки с товарами, покупатель либо не выбирает новую цель (30% шанс),
+            // либо идет к кассе (если доступны), либо к другой полке
             if (Math.random() < 0.3) {
               setCustomerTarget({
                 id: customer.id,
@@ -71,17 +91,28 @@ export function CustomerList() {
                 targetPosition: { ...customer.position }
               });
             } else {
-              const otherShelves = shelves.filter(
-                (s) => s.id !== customer.targetShelfId
-              );
-              if (otherShelves.length > 0) {
-                const newTarget =
-                  otherShelves[Math.floor(Math.random() * otherShelves.length)];
+              // Если есть доступные кассы и покупатель посетил хотя бы одну полку, направляем его к кассе
+              if (cashRegisters.length > 0) {
+                const randomCashier = cashRegisters[Math.floor(Math.random() * cashRegisters.length)];
                 setCustomerTarget({
                   id: customer.id,
-                  targetShelfId: newTarget.id,
-                  targetPosition: { x: newTarget.x, y: 0, z: newTarget.y }
+                  targetShelfId: randomCashier.id,
+                  targetPosition: { x: randomCashier.x, y: 0, z: randomCashier.y }
                 });
+              } else {
+                // Если касс нет, идем к другой полке
+                const otherShelves = shelves.filter(
+                  (s) => s.id !== customer.targetShelfId && s.type !== "cashier"
+                );
+                if (otherShelves.length > 0) {
+                  const newTarget =
+                    otherShelves[Math.floor(Math.random() * otherShelves.length)];
+                  setCustomerTarget({
+                    id: customer.id,
+                    targetShelfId: newTarget.id,
+                    targetPosition: { x: newTarget.x, y: 0, z: newTarget.y }
+                  });
+                }
               }
             }
           } else {
