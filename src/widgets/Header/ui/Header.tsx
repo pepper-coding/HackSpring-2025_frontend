@@ -1,17 +1,18 @@
 "use client";
 import { Button } from "@/shared/components/ui/button";
 import { useAppSelector } from "@/shared/hooks/useAppSelector";
-import React, { FC, useState } from "react";
-import { useRouter } from "next/navigation";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import React, { FC, use, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
-  DialogClose
+  DialogClose,
 } from "@/shared/components/ui/dialog";
 import { DetailedAnalytics } from "@/widgets/DetailedAnalytics";
 import { StoreProvider } from "@/app/providers/store";
+import { useUpdateManyShelvesMutation } from "@/entities/Shelves/api/shelves.api";
+import { Loader } from "lucide-react";
 
 export interface HeaderProps {
   setShowAnalytics: (showAnalytics: boolean) => void;
@@ -22,25 +23,12 @@ export const Header: FC<HeaderProps> = ({
   setShowAnalytics,
   showAnalytics,
 }) => {
-  const storeSize = useAppSelector((state) => state.store);
+  const [updateShelves, { isLoading }] = useUpdateManyShelvesMutation();
   const shelves = useAppSelector((state) => state.shelves.items);
   const [showDetailedAnalytics, setShowDetailedAnalytics] = useState(false);
 
-  const handleSavePreset = () => {
-    const presetData = {
-      storeSize,
-      shelves: shelves.map((shelf) => ({
-        id: shelf.id,
-        type: shelf.type,
-        position: shelf.position,
-        rotation: shelf.rotation,
-        size: shelf.size,
-        interactions: shelf.interactions,
-      })),
-      createdAt: new Date().toISOString(),
-    };
-
-    console.log("Preset data:", presetData);
+  const handleSavePreset = async () => {
+    await updateShelves(shelves);
   };
 
   return (
@@ -65,16 +53,21 @@ export const Header: FC<HeaderProps> = ({
               onClick={() => setShowDetailedAnalytics(true)}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              Detailed Analytics
+              {isLoading ? <Loader /> : "Detailed Analytics"}
             </Button>
           </div>
         </div>
       </div>
-      
-      <Dialog open={showDetailedAnalytics} onOpenChange={setShowDetailedAnalytics}>
+
+      <Dialog
+        open={showDetailedAnalytics}
+        onOpenChange={setShowDetailedAnalytics}
+      >
         <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Detailed Analytics</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
+              Detailed Analytics
+            </DialogTitle>
             <DialogClose />
           </DialogHeader>
           <StoreProvider>

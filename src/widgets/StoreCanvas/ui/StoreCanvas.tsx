@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Stats } from "@react-three/drei";
 import { StoreFloor } from "./StoreFloor";
-import { ShelfList } from "@/entities/Shelves";
+import { ShelfList, SQUARE_SIZE } from "@/entities/Shelves";
 import { useAppSelector } from "@/shared/hooks/useAppSelector";
 import { useShelvesActions } from "@/entities/Shelves";
 import { CustomerList } from "@/entities/Customers";
@@ -92,6 +92,7 @@ export function StoreCanvas({ showAnalytics }: StoreCanvasProps) {
         <CustomerList />
         <Orbit selectedShelfId={selectedShelfId} />
         <Stats />
+        <gridHelper args={[SQUARE_SIZE, SQUARE_SIZE]} />
         <axesHelper args={[5]} />
       </Canvas>
     </div>

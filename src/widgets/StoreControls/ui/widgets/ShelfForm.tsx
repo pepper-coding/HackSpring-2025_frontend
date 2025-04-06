@@ -46,6 +46,8 @@ export const ShelfForm = () => {
       y: z,
       presetId: id,
       name: shelfType,
+      interactions: 0,
+      rotation: 0,
     });
 
     addShelf({

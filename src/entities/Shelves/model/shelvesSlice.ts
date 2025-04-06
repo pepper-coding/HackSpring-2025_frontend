@@ -67,7 +67,7 @@ export const shelvesSlice = buildSlice({
       const shelf = state.items.find((s) => s.id === id);
       if (shelf) {
         shelf.x = position.x;
-        shelf.y = position.y;
+        shelf.y = position.z;
       }
     },
     updateShelfRotation: (

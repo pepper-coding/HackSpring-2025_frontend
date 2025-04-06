@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Loader } from "lucide-react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 interface PresetSelectProps {}
 
@@ -34,10 +34,21 @@ export const PresetSelect: FC<PresetSelectProps> = ({}) => {
   const { clearShelves, setShelves } = useShelvesActions();
   const { updatePreset } = useStoreActions();
 
+  useEffect(() => {
+    if (presets && presets?.length > 0) {
+      const cachedSelectedPreset = localStorage.getItem("selectedPreset");
+      if (cachedSelectedPreset) {
+        setSelectedPreset(cachedSelectedPreset);
+        handlePresetChange(cachedSelectedPreset);
+      }
+    }
+  }, [presets]);
+
   const handlePresetChange = (presetId: string) => {
     if (presetId === "") return;
 
     setSelectedPreset(presetId);
+    localStorage.setItem("selectedPreset", presetId);
 
     if (presetId === "new") {
       setIsModalOpen(true);

@@ -91,6 +91,12 @@ export function ShelfList() {
 
     const group = groupRefs.current[draggingId];
     if (group) {
+      console.log({
+        x: Math.round(group.position.x / SQUARE_SIZE) * SQUARE_SIZE,
+        y: group.position.y,
+        z: Math.round(group.position.z / SQUARE_SIZE) * SQUARE_SIZE,
+      });
+      console.log(group.position);
       updateShelfPosition({
         id: draggingId,
         position: {
@@ -172,7 +178,6 @@ export function ShelfList() {
               >
                 🔄
               </Text>
-
             }
           </group>
         );
