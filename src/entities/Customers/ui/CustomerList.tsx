@@ -25,12 +25,13 @@ interface ShelfPosition {
 export function CustomerList() {
   const customers = useAppSelector((state) => state.customers.items);
   const shelves = useAppSelector((state) => state.shelves.items);
-  const { setCustomerTarget, removeCustomer, updateCustomerPosition } =
-    useCustomersActions();
+  const simulationData = useAppSelector((state) => state.simulation.simulationState);
+  const { setCustomerTarget, updateCustomerPosition, removeCustomer } = useCustomersActions();
   const { recordInteraction } = useAnalyticsActions();
   const { incrementInteraction } = useShelvesActions();
 
   const lineMap = useRef<Map<string, THREE.Line>>(new Map());
+  const pathLinesRef = useRef<Map<string, THREE.Line>>(new Map());
 
   const vectorCache = useRef<VectorCache>({
     direction: new THREE.Vector3(),
@@ -52,11 +53,19 @@ export function CustomerList() {
     return map;
   }, [shelves]);
 
+  // Определяем, какие полки являются кассами
+  const cashierShelves = useMemo(() => {
+    return shelves
+      .filter(shelf => shelf.type === "cashier")
+      .map(shelf => shelf.id);
+  }, [shelves]);
+
   useEffect(() => {
     return () => {
       lineMap.current.clear();
+      pathLinesRef.current.clear();
     };
-  }, []);
+  }, [simulationData]);
 
   const handleCustomerMovement = (
     customer: (typeof customers)[0],
@@ -73,8 +82,10 @@ export function CustomerList() {
     const distance = customerPosition.distanceTo(targetPosition);
 
     if (distance < 0.5) {
-      incrementInteraction(customer.targetShelfId!);
-      recordInteraction(customer.targetShelfId!);
+      if (customer.targetShelfId) {
+        incrementInteraction(customer.targetShelfId);
+        recordInteraction(customer.targetShelfId);
+      }
 
       if (Math.random() < 0.3) {
         setCustomerTarget({
@@ -127,47 +138,157 @@ export function CustomerList() {
     }
   };
 
-  useFrame(() => {
-    const vectors = vectorCache.current;
-    const customersToRemove: string[] = [];
-
-    const updates = {
-      positions: new Map<string, { x: number; y: number; z: number }>(),
-      targets: new Map<string, string | null>(),
-      interactions: new Set<string>(),
-    };
-
-    customers.forEach((customer) => {
-      if (
-        Math.abs(customer.position.x) > 20 ||
-        Math.abs(customer.position.z) > 20
-      ) {
-        customersToRemove.push(customer.id);
-        return;
+  const handleSimulationPathMovement = (customer: (typeof customers)[0]) => {
+    if (!customer.simulationPath || !customer.currentPathIndex) return;
+    
+    // Проверяем достиг ли покупатель конца пути
+    if (customer.currentPathIndex >= customer.simulationPath.length) {
+      // Покупатель достиг конца пути - проверяем, вернулся ли он в начальную точку
+      const startPoint = customer.simulationPath[0];
+      const endPoint = customer.simulationPath[customer.simulationPath.length - 1];
+      
+      // Проверяем, совпадают ли начало и конец пути (возврат к входу/выходу)
+      if (Math.abs(startPoint[0] - endPoint[0]) < 2 && Math.abs(startPoint[1] - endPoint[1]) < 2) {
+        // Очищаем линию пути
+        pathLinesRef.current.delete(customer.id);
+        // Удаляем покупателя, так как он вернулся к выходу
+        removeCustomer(customer.id);
       }
-
-      if (!customer.targetShelfId) {
-        if (shelves.length > 0 && Math.random() < 0.01) {
-          const shelfIds = Array.from(shelfMap.keys());
-          const randomShelfId =
-            shelfIds[Math.floor(Math.random() * shelfIds.length)];
-
-          updates.targets.set(customer.id, randomShelfId);
+      return;
+    }
+    
+    const currentPoint = customer.simulationPath[customer.currentPathIndex - 1];
+    const nextPoint = customer.simulationPath[customer.currentPathIndex];
+    
+    const vectors = vectorCache.current;
+    vectors.customerPosition.set(customer.position.x, 0, customer.position.z);
+    vectors.targetPosition.set(nextPoint[0], 0, nextPoint[1]);
+    
+    vectors.direction.subVectors(vectors.targetPosition, vectors.customerPosition).normalize();
+    const distance = vectors.customerPosition.distanceTo(vectors.targetPosition);
+    
+    if (distance < 0.3) {
+      // Достигли текущей точки, переходим к следующей
+      const newPathIndex = customer.currentPathIndex + 1;
+      
+      // Если у нас есть информация о посещенных полках, записываем взаимодействие
+      if (customer.visitedShelves && customer.currentPathIndex < customer.visitedShelves.length) {
+        const shelfId = customer.visitedShelves[customer.currentPathIndex - 1];
+        if (shelfId) {
+          incrementInteraction(shelfId);
+          recordInteraction(shelfId);
         }
+      }
+      
+      // Обновляем позицию и целевую точку покупателя
+      if (newPathIndex < customer.simulationPath.length) {
+        updateCustomerPosition({
+          id: customer.id,
+          position: {
+            x: nextPoint[0],
+            y: 0,
+            z: nextPoint[1],
+          },
+          currentPathIndex: newPathIndex
+        });
+        
+        // Обновляем целевую позицию
+        setCustomerTarget({
+          id: customer.id,
+          targetShelfId: customer.targetShelfId,
+          targetPosition: {
+            x: customer.simulationPath[newPathIndex][0],
+            y: 0,
+            z: customer.simulationPath[newPathIndex][1],
+          },
+        });
       } else {
+        // Достигли последней точки в пути
+        // Проверяем, вернулись ли в исходную точку (вход/выход)
+        const startPoint = customer.simulationPath[0];
+        const endPoint = customer.simulationPath[customer.simulationPath.length - 1];
+        
+        updateCustomerPosition({
+          id: customer.id,
+          position: {
+            x: nextPoint[0],
+            y: 0,
+            z: nextPoint[1],
+          },
+          currentPathIndex: newPathIndex
+        });
+        
+        // Проверяем, совпадают ли начало и конец пути
+        if (Math.abs(startPoint[0] - endPoint[0]) < 2 && Math.abs(startPoint[1] - endPoint[1]) < 2) {
+          // Очищаем линию пути
+          pathLinesRef.current.delete(customer.id);
+          // Удаляем покупателя, так как он вернулся к выходу
+          removeCustomer(customer.id);
+        }
+      }
+    } else {
+      // Двигаемся к следующей точке
+      const newPosition = {
+        x: customer.position.x + vectors.direction.x * customer.speed,
+        y: 0,
+        z: customer.position.z + vectors.direction.z * customer.speed,
+      };
+      
+      updateCustomerPosition({
+        id: customer.id,
+        position: newPosition,
+      });
+    }
+  };
+
+  useFrame(() => {
+    customers.forEach((customer) => {
+      // Используем симуляцию, если у покупателя есть путь
+      if (customer.simulationPath && customer.simulationPath.length > 1) {
+        handleSimulationPathMovement(customer);
+      } else if (customer.targetShelfId) {
+        // Используем стандартное движение, если нет пути симуляции
         const targetShelf = shelfMap.get(customer.targetShelfId);
         if (targetShelf) {
-          handleCustomerMovement(customer, targetShelf, vectors);
+          handleCustomerMovement(customer, targetShelf, vectorCache.current);
         }
       }
     });
-
-    updates.targets.forEach((targetId, customerId) => {
-      setCustomerTarget({ id: customerId, targetShelfId: targetId });
-    });
-
-    customersToRemove.forEach((id) => removeCustomer(id));
   });
+
+  // Создание линии пути для покупателя
+  const createPathLine = (customer: (typeof customers)[0]) => {
+    if (!customer.simulationPath || customer.simulationPath.length < 2) return null;
+    
+    const points = customer.simulationPath.map(
+      ([x, z]) => new THREE.Vector3(x, 0.1, z)
+    );
+    
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    
+    return (
+      <line
+        key={`path-${customer.id}`}
+        ref={(el) => {
+          if (el) {
+            // @ts-ignore
+            pathLinesRef.current.set(customer.id, el);
+          } else {
+            pathLinesRef.current.delete(customer.id);
+          }
+        }}
+      >
+        <bufferGeometry attach="geometry" {...geometry} />
+        <lineBasicMaterial
+          attach="material"
+          color="#00ffff"
+          transparent
+          opacity={0.4}
+          linewidth={1}
+        />
+      </line>
+    );
+  };
 
   const createLineForCustomer = (customer: (typeof customers)[0]) => {
     if (!customer.targetShelfId) return null;
@@ -205,8 +326,6 @@ export function CustomerList() {
     );
   };
 
-  const prevCustomerCount = useRef(customers.length);
-
   const sortedCustomers = useMemo(() => {
     return [...customers].sort((a, b) =>
       a.targetShelfId && b.targetShelfId
@@ -219,26 +338,16 @@ export function CustomerList() {
     );
   }, [customers]);
 
-  useEffect(() => {
-    if (prevCustomerCount.current !== customers.length) {
-      // Удаляем линии для несуществующих клиентов
-      const currentIds = new Set(customers.map((c) => c.id));
-      Array.from(lineMap.current.keys()).forEach((id) => {
-        if (!currentIds.has(id)) {
-          lineMap.current.delete(id);
-        }
-      });
-
-      prevCustomerCount.current = customers.length;
-    }
-  }, [customers.length]);
-
   return (
     <>
       {sortedCustomers.map((customer) => (
         <group key={customer.id}>
           <Customer customer={customer} />
-          {customer.targetShelfId && createLineForCustomer(customer)}
+          {customer.simulationPath ? (
+            createPathLine(customer)
+          ) : (
+            customer.targetShelfId && createLineForCustomer(customer)
+          )}
         </group>
       ))}
     </>

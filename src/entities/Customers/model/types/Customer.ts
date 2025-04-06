@@ -5,4 +5,7 @@ export interface Customer {
   targetShelfId: string | null;
   speed: number;
   isTakingItem: boolean;
+  simulationPath?: [number, number][];
+  currentPathIndex?: number;
+  visitedShelves?: string[];
 }

@@ -35,12 +35,16 @@ export const customersSlice = buildSlice({
       action: PayloadAction<{
         id: string;
         position: { x: number; y: number; z: number };
+        currentPathIndex?: number;
       }>
     ) => {
-      const { id, position } = action.payload;
+      const { id, position, currentPathIndex } = action.payload;
       const customer = state.items.find((c) => c.id === id);
       if (customer) {
         customer.position = position;
+        if (currentPathIndex !== undefined) {
+          customer.currentPathIndex = currentPathIndex;
+        }
       }
     },
     setCustomerTarget: (
@@ -85,6 +89,49 @@ export const customersSlice = buildSlice({
       state.items = state.items.filter(
         (customer) => customer.id !== action.payload
       );
+    },
+    setCustomersFromSimulation: (
+      state,
+      action: PayloadAction<{
+        visitors: {
+          id: number;
+          path: [number, number][];
+          final_position: [number, number];
+          visited_shelves: string[];
+        }[];
+      }>
+    ) => {
+      state.items = [];
+      
+      const { visitors } = action.payload;
+      
+      const limitedVisitors = visitors.slice(0, 20);
+      
+      limitedVisitors.forEach((visitor) => {
+        if (visitor.path.length < 2) return;
+        
+        const newCustomer: Customer = {
+          id: visitor.id.toString(),
+          position: {
+            x: visitor.path[0][0],
+            y: 0,
+            z: visitor.path[0][1],
+          },
+          targetPosition: {
+            x: visitor.path[1][0],
+            y: 0,
+            z: visitor.path[1][1],
+          },
+          targetShelfId: visitor.visited_shelves[0] || null,
+          speed: 0.005 + Math.random() * 0.01,
+          isTakingItem: false,
+          simulationPath: visitor.path,
+          currentPathIndex: 1,
+          visitedShelves: visitor.visited_shelves,
+        };
+        
+        state.items.push(newCustomer);
+      });
     },
   },
 });

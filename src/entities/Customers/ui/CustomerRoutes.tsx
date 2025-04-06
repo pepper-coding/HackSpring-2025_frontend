@@ -257,12 +257,14 @@ export function CustomerRoutes({ data }: { data: CustomersData }) {
                 y: 0,
                 z: visitor.path[0][1],
               },
-              speed: 0.05,
               targetPosition: {
                 x: visitor.final_position[0],
                 y: 0,
                 z: visitor.final_position[1],
               },
+              targetShelfId: visitor.visited_shelves[0] || null,
+              speed: 0.05,
+              isTakingItem: false
             }}
           />
 

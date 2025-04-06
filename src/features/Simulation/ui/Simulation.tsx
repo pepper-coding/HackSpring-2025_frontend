@@ -3,6 +3,7 @@ import moment from "moment";
 import { useEffect, useState } from "react";
 import { useSimulationActions } from "../model/slice/simulationSlice";
 import { useGetSimulationMutation } from "../api/simulation.api";
+import { useCustomersActions } from "@/entities/Customers";
 
 export const Simulation = () => {
   const { time, isRunning } = useAppSelector((state) => state.timer);
@@ -10,6 +11,7 @@ export const Simulation = () => {
     moment(time).get("minutes")
   );
   const { setSimulationState } = useSimulationActions();
+  const { setCustomersFromSimulation } = useCustomersActions();
   const [getSimulation] = useGetSimulationMutation();
   const shelves = useAppSelector((state) => state.shelves.items);
   const storeSize = useAppSelector((state) => state.store);
@@ -40,8 +42,10 @@ export const Simulation = () => {
       },
       timeOfDay: moment(time).format("HH:mm"),
     });
+    
     if (result.data) {
       setSimulationState(result.data);
+      setCustomersFromSimulation({ visitors: result.data.visitors });
     }
   };
 
